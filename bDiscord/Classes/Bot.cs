@@ -61,7 +61,7 @@ namespace bDiscord
                             {
                                 using (WebClient web = new WebClient())
                                 {
-                                    string teamName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!roster ") + "!roster ".Length + 1);
+                                    string teamName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!roster") + "!roster".Length + 1);
                                     string teamURL = string.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
                                     string pageSource = web.DownloadString(teamURL);
                                     var roster = JsonConvert.DeserializeObject<NHLRoster.RootObject>(pageSource);
@@ -81,7 +81,7 @@ namespace bDiscord
                             }
                             catch (Exception ex) { Console.WriteLine(ex.Message); }
                         }
-                        else if (e.Message.Text.StartsWith("!followage"))
+                        else if (e.Message.Text.StartsWith("!followage "))
                         {
                             try
                             {
@@ -119,7 +119,7 @@ namespace bDiscord
                         {
                             try
                             {
-                                string gameName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!setgame ") + "!setgame ".Length + 1);
+                                string gameName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!setgame") + "!setgame".Length + 1);
                                 client.SetGame(gameName);
                                 Console.WriteLine("[" + DateTime.Now.ToString() + "] Game changed to: " + gameName);
                             }
@@ -176,7 +176,7 @@ namespace bDiscord
                         else if (e.Message.Text.StartsWith("!addtopping ") && parameters.Length >= 1)
                         {
                             bool match = false;
-                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!addtopping ") + "!addtopping ".Length + 1);
+                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!addtopping") + "!addtopping".Length + 1);
                             foreach (var topping in Lists.Toppings)
                             {
                                 if (topping == toppingName)
@@ -195,7 +195,7 @@ namespace bDiscord
                         else if (e.Message.Text.StartsWith("!deltopping ") && parameters.Length >= 1)
                         {
                             bool match = false;
-                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!deltopping ") + "!deltopping ".Length + 1);
+                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!deltopping") + "!deltopping".Length + 1);
                             if (toppingName.Contains("*") && toppingName.Length > 3)
                             {
                                 List<string> toppingsToRemove = new List<string>();
@@ -234,7 +234,7 @@ namespace bDiscord
                         }
                         else if (e.Message.Text.StartsWith("!findtopping ") && parameters.Length >= 1)
                         {
-                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!findtopping ") + "!findtopping ".Length + 1);
+                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!findtopping") + "!findtopping".Length + 1);
                             List<string> matches = new List<string>();
                             foreach (var topping in Lists.Toppings)
                             {
