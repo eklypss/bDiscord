@@ -9,7 +9,7 @@ namespace bDiscord.Classes
         public static void AddTopping(string name)
         {
             Lists.Toppings.Add(name);
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Topping added: " + name);
+            Printer.Print("Topping added: " + name);
             File.Delete(Files.ToppingFile);
             using (StreamWriter file = new StreamWriter(Files.ToppingFile))
             {
@@ -29,7 +29,7 @@ namespace bDiscord.Classes
                 if (topping == name)
                 {
                     Lists.Toppings.Remove(name);
-                    Console.WriteLine("[" + DateTime.Now.ToString() + "] Topping removed: " + name);
+                    Printer.Print("Topping removed: " + name);
                     break;
                 }
             }
@@ -48,7 +48,7 @@ namespace bDiscord.Classes
                     serializer.Serialize(writer, Lists.Toppings);
                 }
             }
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Toppings saved.");
+            Printer.Print("Toppings saved.");
         }
     }
 }

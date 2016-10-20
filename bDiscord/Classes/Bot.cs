@@ -53,7 +53,7 @@ namespace bDiscord
                                     await e.Channel.SendMessage("**Starter:** " + goalieName + ", **backup:** " + backupName);
                                 }
                             }
-                            catch (WebException ex) { Console.WriteLine(ex.Message); }
+                            catch (WebException ex) { Printer.Print(ex.Message); }
                         }
                         else if (e.Message.Text.StartsWith("!roster ") && parameters.Length > 1)
                         {
@@ -79,7 +79,7 @@ namespace bDiscord
                                     await e.Channel.SendMessage("**Offense:** " + string.Join(", ", forwards));
                                 }
                             }
-                            catch (Exception ex) { Console.WriteLine(ex.Message); }
+                            catch (Exception ex) { Printer.Print(ex.Message); }
                         }
                         else if (e.Message.Text.StartsWith("!followage "))
                         {
@@ -97,7 +97,7 @@ namespace bDiscord
                                     await e.Channel.SendMessage(parameters[1] + " has been following " + parameters[2] + " for " + response + "!");
                                 }
                             }
-                            catch (Exception ex) { Console.WriteLine(ex.Message); }
+                            catch (Exception ex) { Printer.Print(ex.Message); }
                         }
                         else if (e.Message.Text == "!kisu")
                         {
@@ -121,9 +121,9 @@ namespace bDiscord
                             {
                                 string gameName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!setgame") + "!setgame".Length + 1);
                                 client.SetGame(gameName);
-                                Console.WriteLine("[" + DateTime.Now.ToString() + "] Game changed to: " + gameName);
+                                Printer.Print("Game changed to: " + gameName);
                             }
-                            catch (Exception ex) { Console.WriteLine(ex.Message); }
+                            catch (Exception ex) { Printer.Print(ex.Message); }
                         }
                         else if (e.Message.Text == "!toppings" || e.Message.Text == "!täytteet" || e.Message.Text == "!randomtäytteet")
                         {
@@ -261,7 +261,7 @@ namespace bDiscord
                         }
                     }
                 }
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] [" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
+                Printer.Print("[" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
             };
 
             try
@@ -269,14 +269,14 @@ namespace bDiscord
                 client.ExecuteAndWait(async () =>
                 {
                     await client.Connect(BotSettings.BotToken, TokenType.Bot);
-                    Console.WriteLine("[" + DateTime.Now.ToString() + "] Connected!");
+                    Printer.Print("Connected!");
                     client.SetGame(BotSettings.BotGame);
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] Could not connect: " + ex.Message);
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] Make sure your bot token in settings/keys.config file is valid.");
+                Printer.Print("Could not connect: " + ex.Message);
+                Printer.Print("Make sure your bot token in settings/keys.config file is valid.");
                 Console.ReadLine();
             }
         }
@@ -286,15 +286,15 @@ namespace bDiscord
             if (File.ReadAllText(Files.ToppingFile).Length > 0)
             {
                 Lists.Toppings = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.ToppingFile));
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Toppings.Count + " toppings from file.");
+                Printer.Print("Loaded " + Lists.Toppings.Count + " toppings from file.");
             }
-            else Console.WriteLine("[" + DateTime.Now.ToString() + "] No toppings to load.");
+            else Printer.Print("No toppings to load.");
             if (File.ReadAllText(Files.CommandFile).Length > 0)
             {
                 Lists.Commands = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(Files.CommandFile));
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Commands.Keys.Count + " commands from file.");
+                Printer.Print("Loaded " + Lists.Commands.Keys.Count + " commands from file.");
             }
-            else Console.WriteLine("[" + DateTime.Now.ToString() + "] No commands to load.");
+            else Printer.Print("No commands to load.");
         }
 
         private void CheckFiles()
@@ -312,7 +312,7 @@ namespace bDiscord
                 config.AppSettings.Settings.Add("PastebinPassword", "pastebin_password");
                 config.AppSettings.Settings.Add("BotToken", "bot_token");
                 config.Save(ConfigurationSaveMode.Minimal);
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] API keys file created.");
+                Printer.Print("API keys file created.");
             }
             else
             {
@@ -321,7 +321,7 @@ namespace bDiscord
                 APIKeys.PastebinUser = config.AppSettings.Settings["PastebinUser"].Value;
                 APIKeys.PastebinPassword = config.AppSettings.Settings["PastebinPassword"].Value;
                 BotSettings.BotToken = config.AppSettings.Settings["BotToken"].Value;
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] API keys loaded.");
+                Printer.Print("API keys loaded.");
             }
         }
     }
