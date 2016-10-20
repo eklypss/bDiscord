@@ -4,9 +4,9 @@ using System.Text;
 
 namespace bDiscord.Classes
 {
-    public class PasteManager
+    public static class PasteManager
     {
-        public string CreatePaste(string name, string content)
+        public static string CreatePaste(string name, string content)
         {
             NameValueCollection pastebinLogin = new NameValueCollection();
             pastebinLogin.Add("api_dev_key", APIKeys.Pastebin);

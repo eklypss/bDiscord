@@ -97,7 +97,9 @@
     <Compile Include="Classes\Files.cs" />
     <Compile Include="Classes\ListManager.cs" />
     <Compile Include="Classes\Lists.cs" />
-    <Compile Include="Classes\Models\NHLRoster.cs" />
+    <Compile Include="Classes\Models\NHLRoster.cs">
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
     <Compile Include="Classes\PasteManager.cs" />
     <Compile Include="Starter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

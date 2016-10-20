@@ -14,22 +14,15 @@ namespace bDiscord
 {
     public class Bot
     {
-        private DiscordClient _client;
-        private CommandManager _commandManager;
-        private ListManager _listManager;
-        private PasteManager _pasteManager;
+        private DiscordClient client;
 
         public void Start()
         {
             CheckFiles();
             LoadData();
 
-            _client = new DiscordClient();
-            _commandManager = new CommandManager();
-            _listManager = new ListManager();
-            _pasteManager = new PasteManager();
-
-            _client.MessageReceived += async (sender, e) =>
+            client = new DiscordClient();
+            client.MessageReceived += async (sender, e) =>
             {
                 if (!e.Message.IsAuthor)
                 {
@@ -39,11 +32,11 @@ namespace bDiscord
 
                         if (e.Message.Text == "!commands")
                         {
-                            await e.Channel.SendMessage(_pasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile)));
+                            await e.Channel.SendMessage(PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile)));
                         }
                         else if (e.Message.Text == "!toppingslist")
                         {
-                            await e.Channel.SendMessage(_pasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile)));
+                            await e.Channel.SendMessage(PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile)));
                         }
                         else if (e.Message.Text.StartsWith("!goalie ") && parameters.Length > 1)
                         {
@@ -62,13 +55,13 @@ namespace bDiscord
                             }
                             catch (WebException ex) { Console.WriteLine(ex.Message); }
                         }
-                        else if (e.Message.Text.StartsWith("!roster") && parameters.Length > 1)
+                        else if (e.Message.Text.StartsWith("!roster ") && parameters.Length > 1)
                         {
                             try
                             {
                                 using (WebClient web = new WebClient())
                                 {
-                                    string teamName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!roster") + "!roster".Length + 1);
+                                    string teamName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!roster ") + "!roster ".Length + 1);
                                     string teamURL = string.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
                                     string pageSource = web.DownloadString(teamURL);
                                     var roster = JsonConvert.DeserializeObject<NHLRoster.RootObject>(pageSource);
@@ -114,9 +107,11 @@ namespace bDiscord
                                 XmlDocument doc = new XmlDocument();
                                 doc.LoadXml(webPage);
                                 var attrVal = doc.SelectNodes("/response/data/images/image");
+                                if (attrVal == null) return;
                                 foreach (XmlNode node in attrVal)
                                 {
-                                    await e.Channel.SendMessage(node["url"].InnerText);
+                                    XmlElement xmlElement = node["url"];
+                                    if (xmlElement != null) await e.Channel.SendMessage(xmlElement.InnerText);
                                 }
                             }
                         }
@@ -125,7 +120,7 @@ namespace bDiscord
                             try
                             {
                                 string gameName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!setgame ") + "!setgame ".Length + 1);
-                                _client.SetGame(gameName);
+                                client.SetGame(gameName);
                                 Console.WriteLine("[" + DateTime.Now.ToString() + "] Game changed to: " + gameName);
                             }
                             catch (Exception ex) { Console.WriteLine(ex.Message); }
@@ -159,7 +154,7 @@ namespace bDiscord
                             if (!match)
                             {
                                 string commandAction = e.Message.Text.Substring(e.Message.Text.LastIndexOf(parameters[1]) + parameters[1].Length + 1);
-                                _commandManager.AddCommand(parameters[1], commandAction);
+                                CommandManager.AddCommand(parameters[1], commandAction);
                                 await e.Channel.SendMessage("Added command: " + parameters[1] + ", action: " + commandAction);
                             }
                         }
@@ -170,7 +165,7 @@ namespace bDiscord
                             {
                                 if (command.Key == parameters[1])
                                 {
-                                    _commandManager.RemoveCommand(parameters[1]);
+                                    CommandManager.RemoveCommand(parameters[1]);
                                     await e.Channel.SendMessage("Command " + parameters[1] + " removed.");
                                     match = true;
                                     break;
@@ -193,7 +188,7 @@ namespace bDiscord
                             }
                             if (!match)
                             {
-                                _listManager.AddTopping(toppingName);
+                                ListManager.AddTopping(toppingName);
                                 await e.Channel.SendMessage("Added topping: " + toppingName);
                             }
                         }
@@ -217,7 +212,7 @@ namespace bDiscord
                                 {
                                     foreach (var topping in toppingsToRemove)
                                     {
-                                        _listManager.RemoveTopping(topping);
+                                        ListManager.RemoveTopping(topping);
                                     }
                                     await e.Channel.SendMessage("Removed " + toppingsToRemove.Count + " toppings that contained: '" + tempName + "'");
                                 }
@@ -228,7 +223,7 @@ namespace bDiscord
                                 {
                                     if (topping == toppingName)
                                     {
-                                        _listManager.RemoveTopping(toppingName);
+                                        ListManager.RemoveTopping(toppingName);
                                         await e.Channel.SendMessage("Topping " + toppingName + " removed.");
                                         match = true;
                                         break;
@@ -271,11 +266,11 @@ namespace bDiscord
 
             try
             {
-                _client.ExecuteAndWait(async () =>
+                client.ExecuteAndWait(async () =>
                 {
-                    await _client.Connect(BotSettings.BotToken, TokenType.Bot);
+                    await client.Connect(BotSettings.BotToken, TokenType.Bot);
                     Console.WriteLine("[" + DateTime.Now.ToString() + "] Connected!");
-                    _client.SetGame(BotSettings.BotGame);
+                    client.SetGame(BotSettings.BotGame);
                 });
             }
             catch (Exception ex)

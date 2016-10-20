@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
-using Newtonsoft.Json;
 
 namespace bDiscord.Classes
 {
-    public class ListManager
+    public static class ListManager
     {
-        public void AddTopping(string name)
+        public static void AddTopping(string name)
         {
             Lists.Toppings.Add(name);
             Console.WriteLine("[" + DateTime.Now.ToString() + "] Topping added: " + name);
@@ -15,29 +15,14 @@ namespace bDiscord.Classes
             {
                 using (JsonWriter writer = new JsonTextWriter(file))
                 {
-                    writer.Formatting = Newtonsoft.Json.Formatting.Indented;
+                    writer.Formatting = Formatting.Indented;
                     JsonSerializer serializer = new JsonSerializer();
                     serializer.Serialize(writer, Lists.Toppings);
                 }
             }
         }
 
-        public void SaveToppings()
-        {
-            File.Delete(Files.ToppingFile);
-            using (StreamWriter file = File.CreateText(Files.ToppingFile))
-            {
-                using (JsonWriter writer = new JsonTextWriter(file))
-                {
-                    writer.Formatting = Newtonsoft.Json.Formatting.Indented;
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(writer, Lists.Toppings);
-                }
-            }
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Toppings saved.");
-        }
-
-        public void RemoveTopping(string name)
+        public static void RemoveTopping(string name)
         {
             foreach (var topping in Lists.Toppings)
             {
@@ -49,6 +34,21 @@ namespace bDiscord.Classes
                 }
             }
             SaveToppings();
+        }
+
+        private static void SaveToppings()
+        {
+            File.Delete(Files.ToppingFile);
+            using (StreamWriter file = File.CreateText(Files.ToppingFile))
+            {
+                using (JsonWriter writer = new JsonTextWriter(file))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(writer, Lists.Toppings);
+                }
+            }
+            Console.WriteLine("[" + DateTime.Now.ToString() + "] Toppings saved.");
         }
     }
 }
