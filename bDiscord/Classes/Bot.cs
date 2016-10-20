@@ -39,11 +39,11 @@ namespace bDiscord
 
                         if (e.Message.Text == "!commands")
                         {
-                            await e.Channel.SendMessage(_pasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + "", File.ReadAllText(Files.CommandFile)));
+                            await e.Channel.SendMessage(_pasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile)));
                         }
                         else if (e.Message.Text == "!toppingslist")
                         {
-                            await e.Channel.SendMessage(_pasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + "", File.ReadAllText(Files.ToppingFile)));
+                            await e.Channel.SendMessage(_pasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile)));
                         }
                         else if (e.Message.Text.StartsWith("!goalie ") && parameters.Length > 1)
                         {
@@ -52,7 +52,7 @@ namespace bDiscord
                                 using (WebClient web = new WebClient())
                                 {
                                     string teamName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!goalie") + "!goalie".Length + 1);
-                                    string teamURL = String.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
+                                    string teamURL = string.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
                                     string pageSource = web.DownloadString(teamURL);
                                     JToken token = JToken.Parse(pageSource);
                                     string goalieName = (string)token.SelectToken("goalie[0].name");
@@ -69,30 +69,21 @@ namespace bDiscord
                                 using (WebClient web = new WebClient())
                                 {
                                     string teamName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!roster") + "!roster".Length + 1);
-                                    string teamURL = String.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
+                                    string teamURL = string.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
                                     string pageSource = web.DownloadString(teamURL);
                                     var roster = JsonConvert.DeserializeObject<NHLRoster.RootObject>(pageSource);
                                     List<string> goalies = new List<string>();
                                     List<string> defensemen = new List<string>();
                                     List<string> forwards = new List<string>();
 
-                                    foreach (var goalie in roster.goalie)
-                                    {
-                                        goalies.Add(goalie.name);
-                                    }
-                                    foreach (var defenseman in roster.defensemen)
-                                    {
-                                        defensemen.Add(defenseman.name);
-                                    }
-                                    foreach (var forward in roster.forwards)
-                                    {
-                                        forwards.Add(forward.name);
-                                    }
+                                    foreach (var goalie in roster.goalie) { goalies.Add(goalie.name); }
+                                    foreach (var defenseman in roster.defensemen) { defensemen.Add(defenseman.name); }
+                                    foreach (var forward in roster.forwards) { forwards.Add(forward.name); }
 
                                     await e.Channel.SendMessage(teamName + " roster (" + roster.timestamp + ")");
-                                    await e.Channel.SendMessage("**Goalies:** " + String.Join(", ", goalies));
-                                    await e.Channel.SendMessage("**Defense:** " + String.Join(", ", defensemen));
-                                    await e.Channel.SendMessage("**Offense:** " + String.Join(", ", forwards));
+                                    await e.Channel.SendMessage("**Goalies:** " + string.Join(", ", goalies));
+                                    await e.Channel.SendMessage("**Defense:** " + string.Join(", ", defensemen));
+                                    await e.Channel.SendMessage("**Offense:** " + string.Join(", ", forwards));
                                 }
                             }
                             catch (Exception ex) { Console.WriteLine(ex.Message); }
@@ -102,7 +93,7 @@ namespace bDiscord
                             try
                             {
                                 WebClient webClient = new WebClient();
-                                string link = String.Format("https://api.rtainc.co/twitch/channels/{1}/followers/{0}?format=[2]", parameters[1], parameters[2]);
+                                string link = string.Format("https://api.rtainc.co/twitch/channels/{1}/followers/{0}?format=[2]", parameters[1], parameters[2]);
                                 string response = webClient.DownloadString(link);
                                 if (response.Contains("isn't following"))
                                 {
@@ -151,7 +142,7 @@ namespace bDiscord
                                 randomList.Add(Lists.Toppings[random.Next(toppingsAmount)]);
                             }
 
-                            await e.Channel.SendMessage(String.Join(", ", randomList));
+                            await e.Channel.SendMessage(string.Join(", ", randomList));
                         }
                         else if (e.Message.Text.StartsWith("!addcom ") && parameters.Length >= 2)
                         {
@@ -213,7 +204,7 @@ namespace bDiscord
                             if (toppingName.Contains("*") && toppingName.Length > 3)
                             {
                                 List<string> toppingsToRemove = new List<string>();
-                                string tempName = toppingName.Replace("*", String.Empty);
+                                string tempName = toppingName.Replace("*", string.Empty);
                                 foreach (var topping in Lists.Toppings)
                                 {
                                     if (topping.Contains(tempName))
@@ -259,7 +250,7 @@ namespace bDiscord
                             }
                             if (matches.Count > 0)
                             {
-                                await e.Channel.SendMessage("Matches: " + String.Join(", ", matches));
+                                await e.Channel.SendMessage("Matches: " + string.Join(", ", matches));
                             }
                             else await e.Channel.SendMessage("No matches!");
                         }
