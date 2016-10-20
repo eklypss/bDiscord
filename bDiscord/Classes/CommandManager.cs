@@ -1,7 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.IO;
-
-using Newtonsoft.Json;
 
 namespace bDiscord.Classes
 {
