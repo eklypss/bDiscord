@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 
 namespace bDiscord.Classes
@@ -8,6 +9,7 @@ namespace bDiscord.Classes
         public void AddCommand(string name, string action)
         {
             Lists.Commands.Add(name, action);
+            Console.WriteLine("[" + DateTime.Now.ToString() + "] Command added: " + name + ", action: " + action);
             File.Delete(Files.CommandFile);
             using (StreamWriter file = new StreamWriter(Files.CommandFile))
             {
@@ -32,6 +34,7 @@ namespace bDiscord.Classes
                     serializer.Serialize(writer, Lists.Commands);
                 }
             }
+            Console.WriteLine("[" + DateTime.Now.ToString() + "] Commands saved.");
         }
 
         public void RemoveCommand(string name)
@@ -41,6 +44,7 @@ namespace bDiscord.Classes
                 if (command.Key == name)
                 {
                     Lists.Commands.Remove(name);
+                    Console.WriteLine("[" + DateTime.Now.ToString() + "] Command removed: " + name);
                     break;
                 }
             }

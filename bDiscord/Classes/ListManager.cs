@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 
 namespace bDiscord.Classes
@@ -8,6 +9,7 @@ namespace bDiscord.Classes
         public void AddTopping(string name)
         {
             Lists.Toppings.Add(name);
+            Console.WriteLine("[" + DateTime.Now.ToString() + "] Topping added: " + name);
             File.Delete(Files.ToppingFile);
             using (StreamWriter file = new StreamWriter(Files.ToppingFile))
             {
@@ -32,6 +34,7 @@ namespace bDiscord.Classes
                     serializer.Serialize(writer, Lists.Toppings);
                 }
             }
+            Console.WriteLine("[" + DateTime.Now.ToString() + "] Toppings saved.");
         }
 
         public void RemoveTopping(string name)
@@ -41,6 +44,7 @@ namespace bDiscord.Classes
                 if (topping == name)
                 {
                     Lists.Toppings.Remove(name);
+                    Console.WriteLine("[" + DateTime.Now.ToString() + "] Topping removed: " + name);
                     break;
                 }
             }

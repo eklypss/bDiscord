@@ -129,12 +129,13 @@ namespace bDiscord
                                 }
                             }
                         }
-                        else if (e.Message.Text.StartsWith("!setgame") && parameters.Length >= 1)
+                        else if (e.Message.Text.StartsWith("!setgame ") && parameters.Length >= 1)
                         {
                             try
                             {
-                                string gameName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!setgame") + "!setgame".Length + 1);
+                                string gameName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!setgame ") + "!setgame ".Length + 1);
                                 _client.SetGame(gameName);
+                                Console.WriteLine("[" + DateTime.Now.ToString() + "] Game changed to: " + gameName);
                             }
                             catch (Exception ex) { Console.WriteLine(ex.Message); }
                         }
@@ -152,7 +153,7 @@ namespace bDiscord
 
                             await e.Channel.SendMessage(String.Join(", ", randomList));
                         }
-                        else if (e.Message.Text.StartsWith("!addcom") && parameters.Length >= 2)
+                        else if (e.Message.Text.StartsWith("!addcom ") && parameters.Length >= 2)
                         {
                             bool match = false;
                             foreach (var commandName in Lists.Commands)
@@ -171,7 +172,7 @@ namespace bDiscord
                                 await e.Channel.SendMessage("Added command: " + parameters[1] + ", action: " + commandAction);
                             }
                         }
-                        else if (e.Message.Text.StartsWith("!delcom") && parameters.Length >= 1)
+                        else if (e.Message.Text.StartsWith("!delcom ") && parameters.Length >= 1)
                         {
                             bool match = false;
                             foreach (var command in Lists.Commands)
@@ -186,10 +187,10 @@ namespace bDiscord
                             }
                             if (!match) await e.Channel.SendMessage("Command does not exist!");
                         }
-                        else if (e.Message.Text.StartsWith("!addtopping") && parameters.Length >= 1)
+                        else if (e.Message.Text.StartsWith("!addtopping ") && parameters.Length >= 1)
                         {
                             bool match = false;
-                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!addtopping") + "!addtopping".Length + 1);
+                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!addtopping ") + "!addtopping ".Length + 1);
                             foreach (var topping in Lists.Toppings)
                             {
                                 if (topping == toppingName)
@@ -205,10 +206,10 @@ namespace bDiscord
                                 await e.Channel.SendMessage("Added topping: " + toppingName);
                             }
                         }
-                        else if (e.Message.Text.StartsWith("!deltopping") && parameters.Length >= 1)
+                        else if (e.Message.Text.StartsWith("!deltopping ") && parameters.Length >= 1)
                         {
                             bool match = false;
-                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!deltopping") + "!deltopping".Length + 1);
+                            string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!deltopping ") + "!deltopping ".Length + 1);
                             if (toppingName.Contains("*") && toppingName.Length > 3)
                             {
                                 List<string> toppingsToRemove = new List<string>();
@@ -245,7 +246,7 @@ namespace bDiscord
                             }
                             if (!match) await e.Channel.SendMessage("Toppping does not exist!");
                         }
-                        else if (e.Message.Text.StartsWith("!findtopping") && parameters.Length >= 1)
+                        else if (e.Message.Text.StartsWith("!findtopping ") && parameters.Length >= 1)
                         {
                             string toppingName = e.Message.Text.Substring(e.Message.Text.LastIndexOf("!findtopping ") + "!findtopping ".Length + 1);
                             List<string> matches = new List<string>();
@@ -283,12 +284,13 @@ namespace bDiscord
                 {
                     await _client.Connect(BotSettings.BotToken, TokenType.Bot);
                     Console.WriteLine("[" + DateTime.Now.ToString() + "] Connected!");
-                    _client.SetGame("DGood");
+                    _client.SetGame(BotSettings.BotGame);
                 });
             }
             catch (Exception ex)
             {
                 Console.WriteLine("[" + DateTime.Now.ToString() + "] Could not connect: " + ex.Message);
+                Console.WriteLine("[" + DateTime.Now.ToString() + "] Make sure your bot token in settings/keys.config file is valid.");
                 Console.ReadLine();
             }
         }
@@ -300,18 +302,20 @@ namespace bDiscord
                 Lists.Toppings = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.ToppingFile));
                 Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Toppings.Count + " toppings from file.");
             }
+            else Console.WriteLine("[" + DateTime.Now.ToString() + "] No toppings to load.");
             if (File.ReadAllText(Files.CommandFile).Length > 0)
             {
                 Lists.Commands = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(Files.CommandFile));
                 Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Commands.Keys.Count + " commands from file.");
             }
+            else Console.WriteLine("[" + DateTime.Now.ToString() + "] No commands to load.");
         }
 
         private void CheckFiles()
         {
             if (!Directory.Exists(Files.BotFolder)) Directory.CreateDirectory(Files.BotFolder);
-            if (!File.Exists(Files.CommandFile)) File.Create(Files.CommandFile).Close(); ;
-            if (!File.Exists(Files.ToppingFile)) File.Create(Files.ToppingFile).Close(); ;
+            if (!File.Exists(Files.CommandFile)) File.Create(Files.CommandFile).Close();
+            if (!File.Exists(Files.ToppingFile)) File.Create(Files.ToppingFile).Close();
 
             if (!File.Exists(Files.KeyFile))
             {
