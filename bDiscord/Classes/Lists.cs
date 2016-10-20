@@ -2,7 +2,7 @@
 
 namespace bDiscord.Classes
 {
-    public class Lists
+    internal static class Lists
     {
         public static List<string> Toppings = new List<string>();
         public static Dictionary<string, string> Commands = new Dictionary<string, string>();

@@ -277,35 +277,50 @@ namespace bDiscord
                 Console.WriteLine("[" + DateTime.Now.ToString() + "] [" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
             };
 
-            _client.ExecuteAndWait(async () =>
+            try
             {
-                await _client.Connect(BotSettings.BotToken, TokenType.Bot);
-                Console.WriteLine("[" + DateTime.Now.ToString() + "] Connected!");
-                _client.SetGame("DGood");
-            });
+                _client.ExecuteAndWait(async () =>
+                {
+                    await _client.Connect(BotSettings.BotToken, TokenType.Bot);
+                    Console.WriteLine("[" + DateTime.Now.ToString() + "] Connected!");
+                    _client.SetGame("DGood");
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[" + DateTime.Now.ToString() + "] Could not connect: " + ex.Message);
+                Console.ReadLine();
+            }
         }
 
         private void LoadData()
         {
-            Lists.Toppings = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.ToppingFile));
-            Lists.Commands = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(Files.CommandFile));
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Commands.Keys.Count + " commands from file.");
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Toppings.Count + " toppings from file.");
+            if (File.ReadAllText(Files.ToppingFile).Length > 0)
+            {
+                Lists.Toppings = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.ToppingFile));
+                Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Toppings.Count + " toppings from file.");
+            }
+            if (File.ReadAllText(Files.CommandFile).Length > 0)
+            {
+                Lists.Commands = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(Files.CommandFile));
+                Console.WriteLine("[" + DateTime.Now.ToString() + "] Loaded " + Lists.Commands.Keys.Count + " commands from file.");
+            }
         }
 
         private void CheckFiles()
         {
             if (!Directory.Exists(Files.BotFolder)) Directory.CreateDirectory(Files.BotFolder);
-            if (!File.Exists(Files.CommandFile)) File.Create(Files.CommandFile);
-            if (!File.Exists(Files.ToppingFile)) File.Create(Files.ToppingFile);
+            if (!File.Exists(Files.CommandFile)) File.Create(Files.CommandFile).Close(); ;
+            if (!File.Exists(Files.ToppingFile)) File.Create(Files.ToppingFile).Close(); ;
 
             if (!File.Exists(Files.KeyFile))
             {
-                File.Create(Files.KeyFile);
+                File.Create(Files.KeyFile).Close();
                 Configuration config = ConfigurationManager.OpenExeConfiguration(Files.KeyFile);
                 config.AppSettings.Settings.Add("PastebinKey", "pastebin_key");
                 config.AppSettings.Settings.Add("PastebinUser", "pastebin_user");
                 config.AppSettings.Settings.Add("PastebinPassword", "pastebin_password");
+                config.AppSettings.Settings.Add("BotToken", "bot_token");
                 config.Save(ConfigurationSaveMode.Minimal);
                 Console.WriteLine("[" + DateTime.Now.ToString() + "] API keys file created.");
             }
@@ -315,6 +330,7 @@ namespace bDiscord
                 APIKeys.Pastebin = config.AppSettings.Settings["PastebinKey"].Value;
                 APIKeys.PastebinUser = config.AppSettings.Settings["PastebinUser"].Value;
                 APIKeys.PastebinPassword = config.AppSettings.Settings["PastebinPassword"].Value;
+                BotSettings.BotToken = config.AppSettings.Settings["BotToken"].Value;
                 Console.WriteLine("[" + DateTime.Now.ToString() + "] API keys loaded.");
             }
         }

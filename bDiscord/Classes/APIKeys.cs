@@ -1,9 +1,9 @@
 ﻿namespace bDiscord.Classes
 {
-    public class APIKeys
+    internal static class APIKeys
     {
-        public static string Pastebin;
-        public static string PastebinUser;
-        public static string PastebinPassword;
+        public static string Pastebin = string.Empty;
+        public static string PastebinUser = string.Empty;
+        public static string PastebinPassword = string.Empty;
     }
 }
