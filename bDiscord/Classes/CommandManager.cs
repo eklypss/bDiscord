@@ -10,7 +10,7 @@ namespace bDiscord.Classes
         public static void AddCommand(string name, string action)
         {
             Lists.Commands.Add(name, action);
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Command added: " + name + ", action: " + action);
+            Printer.Print("Command added: " + name + ", action: " + action);
             File.Delete(Files.CommandFile);
             using (StreamWriter file = new StreamWriter(Files.CommandFile))
             {
@@ -30,7 +30,7 @@ namespace bDiscord.Classes
                 if (command.Key == name)
                 {
                     Lists.Commands.Remove(name);
-                    Console.WriteLine("[" + DateTime.Now.ToString() + "] Command removed: " + name);
+                    Printer.Print("Command removed: " + name);
                     break;
                 }
             }
@@ -49,7 +49,7 @@ namespace bDiscord.Classes
                     serializer.Serialize(writer, Lists.Commands);
                 }
             }
-            Console.WriteLine("[" + DateTime.Now.ToString() + "] Commands saved.");
+            Printer.Print("Commands saved.");
         }
     }
 }
