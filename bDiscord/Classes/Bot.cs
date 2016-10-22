@@ -368,13 +368,10 @@ namespace bDiscord
                     }
                     else
                     {
-                        foreach (var previousStream in previousStreams)
+                        if (!previousStreams.Contains(stream))
                         {
-                            if (stream != previousStream)
-                            {
-                                Printer.PrintTag("TwitchCheck", stream + " is online!");
-                                streamChannel.SendMessage(stream + " is now online, playing " + TwitchApi.GetTwitchChannel(stream).Result.Game + "! http://www.twitch.tv/" + stream);
-                            }
+                            Printer.PrintTag("TwitchCheck", stream + " is online!");
+                            streamChannel.SendMessage(stream + " is now online, playing " + TwitchApi.GetTwitchChannel(stream).Result.Game + "! " + TwitchApi.GetTwitchChannel(stream).Result.Status + " http://www.twitch.tv/" + stream);
                         }
                     }
                 }
