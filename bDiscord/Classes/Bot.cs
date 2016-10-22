@@ -56,6 +56,14 @@ namespace bDiscord
                         {
                             await e.Channel.SendMessage(PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile)));
                         }
+                        else if (e.Message.Text == "!streamslist" || e.Message.Text == "!streamlist")
+                        {
+                            await e.Channel.SendMessage(PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile)));
+                        }
+                        else if (e.Message.Text == "!streamsonline" || e.Message.Text == "!streams")
+                        {
+                            await e.Channel.SendMessage("**Streams online:** " + string.Join(", ", Lists.OnlineStreams));
+                        }
                         else if (e.Message.Text.StartsWith("!goalie ") && parameters.Length > 1)
                         {
                             try
