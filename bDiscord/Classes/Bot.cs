@@ -7,8 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
+using TwitchLib;
+using Channel = TwitchLib.TwitchAPIClasses.Channel;
 
 namespace bDiscord
 {
@@ -16,12 +21,20 @@ namespace bDiscord
     {
         private DiscordClient client;
 
+        private Timer timer;
+        private Discord.Channel mainChannel;
+        private Discord.Channel streamChannel;
+
         public void Start()
         {
             CheckFiles();
             LoadData();
 
             client = new DiscordClient();
+            timer = new Timer(TwitchCheck, null, 5000, 30000);
+
+            TwitchApi.SetClientId(APIKeys.TwitchClientID);
+
             client.MessageReceived += async (sender, e) =>
             {
                 if (!e.Message.IsAuthor)
@@ -33,6 +46,11 @@ namespace bDiscord
                         if (e.Message.Text == "!commands")
                         {
                             await e.Channel.SendMessage(PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile)));
+                        }
+                        if (e.Message.Text.StartsWith("!followers") && parameters.Length > 1)
+                        {
+                            Task<Channel> followers = TwitchApi.GetTwitchChannel(parameters[1]);
+                            await e.Channel.SendMessage(parameters[1] + " has " + followers.Result.Followers + " followers.");
                         }
                         else if (e.Message.Text == "!toppingslist")
                         {
@@ -53,7 +71,7 @@ namespace bDiscord
                                     await e.Channel.SendMessage("**Starter:** " + goalieName + ", **backup:** " + backupName);
                                 }
                             }
-                            catch (WebException ex) { Printer.Print(ex.Message); }
+                            catch (WebException ex) { Printer.PrintTag("Exception", ex.Message); }
                         }
                         else if (e.Message.Text.StartsWith("!roster ") && parameters.Length > 1)
                         {
@@ -79,7 +97,7 @@ namespace bDiscord
                                     await e.Channel.SendMessage("**Offense:** " + string.Join(", ", forwards));
                                 }
                             }
-                            catch (Exception ex) { Printer.Print(ex.Message); }
+                            catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
                         }
                         else if (e.Message.Text.StartsWith("!followage "))
                         {
@@ -97,7 +115,7 @@ namespace bDiscord
                                     await e.Channel.SendMessage(parameters[1] + " has been following " + parameters[2] + " for " + response + "!");
                                 }
                             }
-                            catch (Exception ex) { Printer.Print(ex.Message); }
+                            catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
                         }
                         else if (e.Message.Text == "!kisu")
                         {
@@ -123,7 +141,7 @@ namespace bDiscord
                                 client.SetGame(gameName);
                                 Printer.Print("Game changed to: " + gameName);
                             }
-                            catch (Exception ex) { Printer.Print(ex.Message); }
+                            catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
                         }
                         else if (e.Message.Text == "!toppings" || e.Message.Text == "!täytteet" || e.Message.Text == "!randomtäytteet")
                         {
@@ -146,7 +164,7 @@ namespace bDiscord
                             {
                                 if (commandName.Key == parameters[1])
                                 {
-                                    await e.Channel.SendMessage("Command " + parameters[1] + " already exists.");
+                                    await e.Channel.SendMessage("Command **" + parameters[1] + "** already exists.");
                                     match = true;
                                     break;
                                 }
@@ -155,7 +173,7 @@ namespace bDiscord
                             {
                                 string commandAction = e.Message.Text.Substring(e.Message.Text.LastIndexOf(parameters[1]) + parameters[1].Length + 1);
                                 CommandManager.AddCommand(parameters[1], commandAction);
-                                await e.Channel.SendMessage("Added command: " + parameters[1] + ", action: " + commandAction);
+                                await e.Channel.SendMessage("Added command: **" + parameters[1] + "**, action: **" + commandAction + "**");
                             }
                         }
                         else if (e.Message.Text.StartsWith("!delcom ") && parameters.Length >= 1)
@@ -171,7 +189,7 @@ namespace bDiscord
                                     break;
                                 }
                             }
-                            if (!match) await e.Channel.SendMessage("Command does not exist!");
+                            if (!match) await e.Channel.SendMessage("Command **" + parameters[1] + "** does not exist!");
                         }
                         else if (e.Message.Text.StartsWith("!addtopping ") && parameters.Length >= 1)
                         {
@@ -181,7 +199,7 @@ namespace bDiscord
                             {
                                 if (topping == toppingName)
                                 {
-                                    await e.Channel.SendMessage("Topping " + toppingName + " already exists.");
+                                    await e.Channel.SendMessage("Topping **" + toppingName + "** already exists.");
                                     match = true;
                                     break;
                                 }
@@ -190,6 +208,44 @@ namespace bDiscord
                             {
                                 ListManager.AddTopping(toppingName);
                                 await e.Channel.SendMessage("Added topping: " + toppingName);
+                            }
+                        }
+                        else if (e.Message.Text.StartsWith("!addstream ") && parameters.Length >= 1)
+                        {
+                            bool match = false;
+                            string streamName = parameters[1];
+                            foreach (var stream in Lists.TwitchStreams)
+                            {
+                                if (stream == streamName)
+                                {
+                                    await e.Channel.SendMessage("Stream **" + streamName + "** is already in the list.");
+                                    match = true;
+                                    break;
+                                }
+                            }
+                            if (!match)
+                            {
+                                ListManager.AddStream(streamName);
+                                await e.Channel.SendMessage("Added stream: **" + streamName + "**");
+                            }
+                        }
+                        else if (e.Message.Text.StartsWith("!delstream ") && parameters.Length >= 1)
+                        {
+                            bool match = false;
+                            string streamName = parameters[1];
+                            foreach (var stream in Lists.TwitchStreams)
+                            {
+                                if (stream == streamName)
+                                {
+                                    ListManager.RemoveStream(streamName);
+                                    await e.Channel.SendMessage("Stream removed: **" + streamName + "**");
+                                    match = true;
+                                    break;
+                                }
+                            }
+                            if (!match)
+                            {
+                                await e.Channel.SendMessage("Stream not found: **" + streamName + "**");
                             }
                         }
                         else if (e.Message.Text.StartsWith("!deltopping ") && parameters.Length >= 1)
@@ -214,7 +270,7 @@ namespace bDiscord
                                     {
                                         ListManager.RemoveTopping(topping);
                                     }
-                                    await e.Channel.SendMessage("Removed " + toppingsToRemove.Count + " toppings that contained: '" + tempName + "'");
+                                    await e.Channel.SendMessage("Removed **" + toppingsToRemove.Count + "** toppings that contained: **'" + tempName + "'**");
                                 }
                             }
                             else
@@ -269,16 +325,61 @@ namespace bDiscord
                 client.ExecuteAndWait(async () =>
                 {
                     await client.Connect(BotSettings.BotToken, TokenType.Bot);
-                    Printer.Print("Connected!");
                     client.SetGame(BotSettings.BotGame);
+                    Timer t = null;
+                    t = new Timer((obj) => { SetupChannels(); t.Dispose(); }, null, 1000, System.Threading.Timeout.Infinite);
+                    Printer.Print("Connected!");
                 });
             }
             catch (Exception ex)
             {
-                Printer.Print("Could not connect: " + ex.Message);
-                Printer.Print("Make sure your bot token in settings/keys.config file is valid.");
+                Printer.PrintTag("Exception", "Could not connect: " + ex.Message);
+                Printer.PrintTag("Exception", "Make sure your bot token in settings/keys.config file is valid.");
                 Console.ReadLine();
             }
+        }
+
+        private void SetupChannels()
+        {
+            var server = client.Servers.FirstOrDefault();
+            mainChannel = server.FindChannels(BotSettings.MainChannelName, ChannelType.Text).FirstOrDefault();
+            streamChannel = server.FindChannels(BotSettings.StreamChannelName, ChannelType.Text).FirstOrDefault();
+        }
+
+        private void TwitchCheck(object state)
+        {
+            var previousStreams = new List<string>(Lists.OnlineStreams);
+            Lists.OnlineStreams.Clear();
+            try
+            {
+                foreach (var stream in Lists.TwitchStreams)
+                {
+                    if (TwitchApi.BroadcasterOnline(stream).Result)
+                    {
+                        Lists.OnlineStreams.Add(stream);
+                    }
+                }
+                foreach (var stream in Lists.OnlineStreams)
+                {
+                    if (previousStreams.Count == 0)
+                    {
+                        Printer.PrintTag("TwitchCheck", stream + " is online!");
+                        streamChannel.SendMessage(stream + " is now online, playing " + TwitchApi.GetTwitchChannel(stream).Result.Game + "! http://www.twitch.tv/" + stream);
+                    }
+                    else
+                    {
+                        foreach (var previousStream in previousStreams)
+                        {
+                            if (stream != previousStream)
+                            {
+                                Printer.PrintTag("TwitchCheck", stream + " is online!");
+                                streamChannel.SendMessage(stream + " is now online, playing " + TwitchApi.GetTwitchChannel(stream).Result.Game + "! http://www.twitch.tv/" + stream);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
         }
 
         private void LoadData()
@@ -294,7 +395,12 @@ namespace bDiscord
                 Lists.Commands = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(Files.CommandFile));
                 Printer.Print("Loaded " + Lists.Commands.Keys.Count + " commands from file.");
             }
-            else Printer.Print("No commands to load.");
+            if (File.ReadAllText(Files.StreamFile).Length > 0)
+            {
+                Lists.TwitchStreams = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.StreamFile));
+                Printer.Print("Loaded " + Lists.TwitchStreams.Count + " streams from file.");
+            }
+            else Printer.Print("No streams to load.");
         }
 
         private void CheckFiles()
@@ -302,6 +408,7 @@ namespace bDiscord
             if (!Directory.Exists(Files.BotFolder)) Directory.CreateDirectory(Files.BotFolder);
             if (!File.Exists(Files.CommandFile)) File.Create(Files.CommandFile).Close();
             if (!File.Exists(Files.ToppingFile)) File.Create(Files.ToppingFile).Close();
+            if (!File.Exists(Files.StreamFile)) File.Create(Files.StreamFile).Close();
 
             if (!File.Exists(Files.KeyFile))
             {
@@ -311,8 +418,11 @@ namespace bDiscord
                 config.AppSettings.Settings.Add("PastebinUser", "pastebin_user");
                 config.AppSettings.Settings.Add("PastebinPassword", "pastebin_password");
                 config.AppSettings.Settings.Add("BotToken", "bot_token");
+                config.AppSettings.Settings.Add("TwitchClientID", "twitch_client_id");
+                config.AppSettings.Settings.Add("MainChannel", "#main_channel_name");
+                config.AppSettings.Settings.Add("StreamChannel", "#stream_channel_name");
                 config.Save(ConfigurationSaveMode.Minimal);
-                Printer.Print("API keys file created.");
+                Printer.Print("Settings file created.");
             }
             else
             {
@@ -320,8 +430,11 @@ namespace bDiscord
                 APIKeys.Pastebin = config.AppSettings.Settings["PastebinKey"].Value;
                 APIKeys.PastebinUser = config.AppSettings.Settings["PastebinUser"].Value;
                 APIKeys.PastebinPassword = config.AppSettings.Settings["PastebinPassword"].Value;
+                APIKeys.TwitchClientID = config.AppSettings.Settings["TwitchClientID"].Value;
                 BotSettings.BotToken = config.AppSettings.Settings["BotToken"].Value;
-                Printer.Print("API keys loaded.");
+                BotSettings.MainChannelName = config.AppSettings.Settings["MainChannel"].Value;
+                BotSettings.StreamChannelName = config.AppSettings.Settings["StreamChannel"].Value;
+                Printer.Print("Settings loaded.");
             }
         }
     }

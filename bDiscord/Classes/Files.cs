@@ -8,5 +8,6 @@ namespace bDiscord.Classes
         public static readonly string CommandFile = BotFolder + @"commands.json";
         public static readonly string ToppingFile = BotFolder + @"toppings.json";
         public static readonly string KeyFile = BotFolder + @"keys.config";
+        public static readonly string StreamFile = BotFolder + @"streams.json";
     }
 }

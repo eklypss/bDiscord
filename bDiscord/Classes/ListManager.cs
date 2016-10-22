@@ -49,5 +49,50 @@ namespace bDiscord.Classes
             }
             Printer.Print("Toppings saved.");
         }
+
+        public static void AddStream(string name)
+        {
+            Lists.TwitchStreams.Add(name);
+            Printer.Print("Stream added: " + name);
+            File.Delete(Files.StreamFile);
+            using (StreamWriter file = new StreamWriter(Files.StreamFile))
+            {
+                using (JsonWriter writer = new JsonTextWriter(file))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(writer, Lists.TwitchStreams);
+                }
+            }
+        }
+
+        public static void RemoveStream(string name)
+        {
+            foreach (var stream in Lists.TwitchStreams)
+            {
+                if (stream == name)
+                {
+                    Lists.TwitchStreams.Remove(name);
+                    Printer.Print("Stream removed: " + name);
+                    break;
+                }
+            }
+            SaveStreams();
+        }
+
+        private static void SaveStreams()
+        {
+            File.Delete(Files.StreamFile);
+            using (StreamWriter file = File.CreateText(Files.StreamFile))
+            {
+                using (JsonWriter writer = new JsonTextWriter(file))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(writer, Lists.TwitchStreams);
+                }
+            }
+            Printer.Print("Streams saved.");
+        }
     }
 }
