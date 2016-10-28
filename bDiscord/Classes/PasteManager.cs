@@ -29,6 +29,7 @@ namespace bDiscord.Classes
             using (WebClient web = new WebClient())
             {
                 string response = Encoding.UTF8.GetString(web.UploadValues("http://pastebin.com/api/api_post.php", pastebinQuery));
+                Printer.PrintTag("PasteManager", "Paste created: " + name + " - " + response);
                 return response;
             }
         }

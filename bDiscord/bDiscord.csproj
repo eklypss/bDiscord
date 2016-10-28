@@ -113,10 +113,14 @@
     <Compile Include="Classes\APIKeys.cs" />
     <Compile Include="Classes\Bot.cs" />
     <Compile Include="Classes\BotSettings.cs" />
+    <Compile Include="Classes\Channels.cs" />
     <Compile Include="Classes\CommandManager.cs" />
+    <Compile Include="Classes\EventManager.cs" />
     <Compile Include="Classes\Files.cs" />
     <Compile Include="Classes\ListManager.cs" />
     <Compile Include="Classes\Lists.cs" />
+    <Compile Include="Classes\Models\EPPlayerStats.cs" />
+    <Compile Include="Classes\Models\EPStats.cs" />
     <Compile Include="Classes\Models\NHLRoster.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
