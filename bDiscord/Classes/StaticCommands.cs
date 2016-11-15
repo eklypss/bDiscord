@@ -192,7 +192,8 @@ namespace bDiscord.Classes
                             {
                                 ListManager.AddStream(parameters[2]);
                                 return "Added stream: **" + parameters[2] + "**";
-                            } else return "Stream **" + parameters[2] + "** is already in the list.";
+                            }
+                            else return "Stream **" + parameters[2] + "** is already in the list.";
                         }
                         case "delete":
                         {
@@ -209,12 +210,12 @@ namespace bDiscord.Classes
                             if (!match)
                             {
                                 return "Stream not found: **" + parameters[2] + "**";
-                            } else return "Stream removed: **" + parameters[2] + "**";
+                            }
+                            else return "Stream removed: **" + parameters[2] + "**";
                         }
                         case "list":
                         {
                             return PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
-                            break;
                         }
                         case "online":
                         {
@@ -245,11 +246,12 @@ namespace bDiscord.Classes
                                     break;
                                 }
                             }
-                            if(!match)
+                            if (!match)
                             {
                                 ListManager.AddTopping(toppingName);
                                 return "Added topping: " + toppingName;
-                            } else return "Topping **" + toppingName + "** already exists.";
+                            }
+                            else return "Topping **" + toppingName + "** already exists.";
                         }
                         case "delete":
                         {
@@ -288,7 +290,7 @@ namespace bDiscord.Classes
                                     }
                                 }
                             }
-                            if(!match) return "Toppping does not exist!";
+                            if (!match) return "Toppping does not exist!";
                             else return "Topping " + toppingName + " removed.";
                         }
                         case "find":
@@ -311,7 +313,6 @@ namespace bDiscord.Classes
                         case "list":
                         {
                             return PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
-                            break;
                         }
                         default:
                         {
@@ -413,8 +414,8 @@ namespace bDiscord.Classes
                             string league = parameters[1].ToLower();
                             string stat = parameters[2].ToLower();
                             int leagueID = 7;
-                            if(league.ToLower() == "nhl") leagueID = 7;
-                            if(league.ToLower() == "liiga") leagueID = 6;
+                            if (league.ToLower() == "nhl") leagueID = 7;
+                            if (league.ToLower() == "liiga") leagueID = 6;
                             if (stat == "points" || stat == "goals" || stat == "assists" || stat == "ppg" || stat == "svs" || stat == "pim")
                             {
                                 EPStats.RootObject stats;
@@ -516,7 +517,6 @@ namespace bDiscord.Classes
                 Printer.PrintTag("StaticCommand", "Static command not found: " + commandText);
                 return string.Empty;
             }
-            return string.Empty;
         }
     }
 }

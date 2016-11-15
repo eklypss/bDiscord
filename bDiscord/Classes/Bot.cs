@@ -1,4 +1,5 @@
 ﻿using bDiscord.Classes;
+using bDiscord.Classes.EventArgs;
 using bDiscord.Classes.Models;
 using Discord;
 using Newtonsoft.Json;
@@ -8,7 +9,6 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using bDiscord.Classes.EventArgs;
 using TwitchLib;
 using Channels = bDiscord.Classes.Channels;
 
@@ -17,6 +17,7 @@ namespace bDiscord
     public class Bot
     {
         public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);
+
         public event OnCommandReceivedEventHandler CommandReceived;
 
         private DiscordClient client;
@@ -47,7 +48,6 @@ namespace bDiscord
                     {
                         OnCommandReceived(this, new CommandReceivedEventArgs() { CommandName = e.Message.Text });
                     }
-
                 }
                 Printer.Print("[" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
             };

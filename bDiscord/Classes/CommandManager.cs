@@ -1,8 +1,8 @@
-﻿using bDiscord.Classes.Models;
+﻿using bDiscord.Classes.EventArgs;
+using bDiscord.Classes.Models;
 using Newtonsoft.Json;
 using System;
 using System.IO;
-using bDiscord.Classes.EventArgs;
 
 namespace bDiscord.Classes
 {
@@ -25,9 +25,9 @@ namespace bDiscord.Classes
             Command newCommand = new Command(name, action);
             Lists.CommandsList.Add(newCommand);
             File.Delete(Files.CommandFile);
-            using(StreamWriter file = new StreamWriter(Files.CommandFile))
+            using (StreamWriter file = new StreamWriter(Files.CommandFile))
             {
-                using(JsonWriter writer = new JsonTextWriter(file))
+                using (JsonWriter writer = new JsonTextWriter(file))
                 {
                     writer.Formatting = Formatting.Indented;
                     JsonSerializer serializer = new JsonSerializer();
@@ -46,9 +46,9 @@ namespace bDiscord.Classes
         public void SaveCommands()
         {
             File.Delete(Files.CommandFile);
-            using(StreamWriter file = File.CreateText(Files.CommandFile))
+            using (StreamWriter file = File.CreateText(Files.CommandFile))
             {
-                using(JsonWriter writer = new JsonTextWriter(file))
+                using (JsonWriter writer = new JsonTextWriter(file))
                 {
                     writer.Formatting = Formatting.Indented;
                     JsonSerializer serializer = new JsonSerializer();
@@ -60,7 +60,7 @@ namespace bDiscord.Classes
 
         public void CheckCommand(string commandName)
         {
-            if(StaticCommands.CheckCommand(commandName) != string.Empty)
+            if (StaticCommands.CheckCommand(commandName) != string.Empty)
             {
                 try
                 {
