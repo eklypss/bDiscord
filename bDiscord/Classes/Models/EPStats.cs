@@ -157,6 +157,8 @@ namespace bDiscord.Classes.Models
             public int GP { get; set; }
             public string contractType { get; set; }
             public int PIM { get; set; }
+            public double SVP { get; set; }
+            public double GAA { get; set; }
             public double PPG { get; set; }
         }
 

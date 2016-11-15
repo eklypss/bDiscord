@@ -9,6 +9,5 @@ namespace bDiscord.Classes
         public static readonly string ToppingFile = BotFolder + @"toppings.json";
         public static readonly string KeyFile = BotFolder + @"keys.config";
         public static readonly string StreamFile = BotFolder + @"streams.json";
-        public static readonly string EventsFile = BotFolder + @"events.json";
     }
 }

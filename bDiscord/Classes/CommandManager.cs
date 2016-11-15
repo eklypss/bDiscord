@@ -1,59 +1,109 @@
-﻿using System.IO;
+﻿using bDiscord.Classes.Models;
 using Newtonsoft.Json;
+using System;
+using System.IO;
+using bDiscord.Classes.EventArgs;
 
 namespace bDiscord.Classes
 {
-    public static class CommandManager
+    public class CommandManager
     {
-        public static void AddCommand(string name, string action)
+        public delegate void OnCommandAddedEventHandler(object source, CommandEventArgs args);
+
+        public delegate void OnCommandRemoveddEventHandler(object source, CommandEventArgs args);
+
+        public delegate void OnCommandsSavedEventHandler(object source, System.EventArgs e);
+
+        public event OnCommandAddedEventHandler CommandAdded;
+
+        public event OnCommandRemoveddEventHandler CommandRemoved;
+
+        public event OnCommandsSavedEventHandler CommandsSaved;
+
+        public void AddCommand(string name, string action)
         {
-            Lists.Commands.Add(name, action);
-            Printer.PrintTag("CommandManager", "Command added: " + name + ", action: " + action);
+            Command newCommand = new Command(name, action);
+            Lists.CommandsList.Add(newCommand);
             File.Delete(Files.CommandFile);
-            using (StreamWriter file = new StreamWriter(Files.CommandFile))
+            using(StreamWriter file = new StreamWriter(Files.CommandFile))
             {
-                using (JsonWriter writer = new JsonTextWriter(file))
+                using(JsonWriter writer = new JsonTextWriter(file))
                 {
                     writer.Formatting = Formatting.Indented;
                     JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(writer, Lists.Commands);
+                    serializer.Serialize(writer, Lists.CommandsList);
+                }
+            }
+            OnCommandAdded(newCommand);
+        }
+
+        public void RemoveCommand(Command cmd)
+        {
+            Lists.CommandsList.Remove(cmd);
+            OnCommandRemoved(cmd);
+        }
+
+        public void SaveCommands()
+        {
+            File.Delete(Files.CommandFile);
+            using(StreamWriter file = File.CreateText(Files.CommandFile))
+            {
+                using(JsonWriter writer = new JsonTextWriter(file))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(writer, Lists.CommandsList);
+                }
+            }
+            OnCommandsSaved();
+        }
+
+        public void CheckCommand(string commandName)
+        {
+            if(StaticCommands.CheckCommand(commandName) != string.Empty)
+            {
+                try
+                {
+                    Channels.MainChannel.SendMessage(StaticCommands.CheckCommand(commandName));
+                }
+                catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
+            }
+            else
+            {
+                foreach (var command in Lists.CommandsList)
+                {
+                    if (command.Name == commandName)
+                    {
+                        Channels.MainChannel.SendMessage(command.Action);
+                    }
                 }
             }
         }
 
-        public static void RemoveCommand(string name)
+        protected virtual void OnCommandAdded(Command cmd)
         {
-            bool match = false;
-            foreach (var command in Lists.Commands)
+            if (CommandAdded != null)
             {
-                if (command.Key == name)
-                {
-                    Lists.Commands.Remove(name);
-                    match = true;
-                    Printer.PrintTag("CommandManager", "Command removed: " + name);
-                    break;
-                }
-            }
-            if (match)
-            {
+                CommandAdded(this, new CommandEventArgs() { Command = cmd });
                 SaveCommands();
             }
-            else Printer.PrintTag("CommandManager", "Command does not exist: " + name);
         }
 
-        private static void SaveCommands()
+        protected virtual void OnCommandRemoved(Command cmd)
         {
-            File.Delete(Files.CommandFile);
-            using (StreamWriter file = File.CreateText(Files.CommandFile))
+            if (CommandRemoved != null)
             {
-                using (JsonWriter writer = new JsonTextWriter(file))
-                {
-                    writer.Formatting = Formatting.Indented;
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(writer, Lists.Commands);
-                }
+                CommandRemoved(this, new CommandEventArgs() { Command = cmd });
+                SaveCommands();
             }
-            Printer.PrintTag("CommandManager", "Commands saved.");
+        }
+
+        protected virtual void OnCommandsSaved()
+        {
+            if (CommandsSaved != null)
+            {
+                CommandsSaved(this, System.EventArgs.Empty);
+            }
         }
     }
 }
