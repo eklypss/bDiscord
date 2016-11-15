@@ -407,15 +407,39 @@ namespace bDiscord.Classes
                     {
                         if (parameters.Length < 3)
                         {
-                            return "Usage: !scoring <NHL/Liiga> <points/goals/assists/ppg/svs/pim>";
+                            return "Usage: !scoring <league> <points/goals/assists/ppg/svs/pim>";
                         }
                         else
                         {
                             string league = parameters[1].ToLower();
                             string stat = parameters[2].ToLower();
                             int leagueID = 7;
-                            if (league.ToLower() == "nhl") leagueID = 7;
-                            if (league.ToLower() == "liiga") leagueID = 6;
+                            switch (league)
+                            {
+                                case "nhl":
+                                leagueID = (int)Enums.LeagueIDs.NHL;
+                                break;
+
+                                case "ahl":
+                                leagueID = (int)Enums.LeagueIDs.AHL;
+                                break;
+
+                                case "liiga":
+                                leagueID = (int)Enums.LeagueIDs.Liiga;
+                                break;
+
+                                case "mestis":
+                                leagueID = (int)Enums.LeagueIDs.Mestis;
+                                break;
+
+                                case "khl":
+                                leagueID = (int)Enums.LeagueIDs.KHL;
+                                break;
+
+                                case "shl":
+                                leagueID = (int)Enums.LeagueIDs.SHL;
+                                break;
+                            }
                             if (stat == "points" || stat == "goals" || stat == "assists" || stat == "ppg" || stat == "svs" || stat == "pim")
                             {
                                 EPStats.RootObject stats;
@@ -484,7 +508,7 @@ namespace bDiscord.Classes
                             }
                             else
                             {
-                                return "Available commands: !scoring <NHL/Liiga> <points/goals/assists/ppg/svs/pim>";
+                                return "Available commands: !scoring <league> <points/goals/assists/ppg/svs/pim>";
                             }
                         }
                     }
