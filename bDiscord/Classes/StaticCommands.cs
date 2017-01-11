@@ -646,7 +646,7 @@ namespace bDiscord.Classes
                 Random random = new Random();
                 List<string> randomList = new List<string>();
                 int amount = random.Next(5, 16);
-                int itemsAmount = Lists.ToppingsList.Count;
+                int itemsAmount = Lists.ItemsList.Count;
                 for (int i = 0; i < amount; i++)
                 {
                     randomList.Add(string.Format("{0} **({1}.{2}€)**", Lists.ItemsList[random.Next(itemsAmount)].name, Lists.ItemsList[random.Next(itemsAmount)].euro_whole, Lists.ItemsList[random.Next(itemsAmount)].euro_cents));
