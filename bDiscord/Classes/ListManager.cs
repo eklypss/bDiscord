@@ -7,7 +7,7 @@ namespace bDiscord.Classes
     {
         public static void AddTopping(string name)
         {
-            Lists.Toppings.Add(name);
+            Lists.ToppingsList.Add(name);
             Printer.PrintTag("ListManager", "Topping added: " + name);
             File.Delete(Files.ToppingFile);
             using (StreamWriter file = new StreamWriter(Files.ToppingFile))
@@ -16,18 +16,18 @@ namespace bDiscord.Classes
                 {
                     writer.Formatting = Formatting.Indented;
                     JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(writer, Lists.Toppings);
+                    serializer.Serialize(writer, Lists.ToppingsList);
                 }
             }
         }
 
         public static void RemoveTopping(string name)
         {
-            foreach (var topping in Lists.Toppings)
+            foreach (var topping in Lists.ToppingsList)
             {
                 if (topping == name)
                 {
-                    Lists.Toppings.Remove(name);
+                    Lists.ToppingsList.Remove(name);
                     Printer.PrintTag("ListManager", "Topping removed: " + name);
                     break;
                 }
@@ -74,7 +74,7 @@ namespace bDiscord.Classes
                 {
                     writer.Formatting = Formatting.Indented;
                     JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(writer, Lists.Toppings);
+                    serializer.Serialize(writer, Lists.ToppingsList);
                 }
             }
             Printer.PrintTag("ListManager", "Toppings saved.");

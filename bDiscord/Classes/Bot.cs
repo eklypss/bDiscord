@@ -8,7 +8,11 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
+using Discord.Audio;
+using RestSharp.Extensions.MonoHttp;
 using TwitchLib;
 using Channels = bDiscord.Classes.Channels;
 
@@ -19,10 +23,10 @@ namespace bDiscord
         public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);
 
         public event OnCommandReceivedEventHandler CommandReceived;
-
-        private DiscordClient client;
         private Timer twitchTimer;
+        private Timer transferTimer;
         private CommandManager commandManager;
+        private Transfer.Datum LatestTransfer;
 
         public void Start()
         {
@@ -31,8 +35,9 @@ namespace bDiscord
             CheckFiles();
             LoadData();
 
-            client = new DiscordClient();
+            Clients.mainClient = new DiscordClient();
             twitchTimer = new Timer(TwitchCheck, null, 60000, 300000);
+            transferTimer = new Timer(TransferCheck, null, 5000, 60000);
             commandManager = new CommandManager();
             commandManager.CommandAdded += OnCommandAdded;
             this.CommandReceived += OnCommandReceived;
@@ -40,7 +45,7 @@ namespace bDiscord
 
             #endregion Setup
 
-            client.MessageReceived += (sender, e) =>
+            Clients.mainClient.MessageReceived += (sender, e) =>
             {
                 if (!e.Message.IsAuthor)
                 {
@@ -54,12 +59,19 @@ namespace bDiscord
 
             #region Try to connect and handle errors
 
+            Clients.mainClient.UsingAudio(x =>
+                {
+                    x.Mode = AudioMode.Outgoing;
+                    x.Bitrate = 128;
+                    
+                });
+
             try
             {
-                client.ExecuteAndWait(async () =>
+                Clients.mainClient.ExecuteAndWait(async () =>
                     {
-                        await client.Connect(BotSettings.BotToken, TokenType.Bot);
-                        client.SetGame(BotSettings.BotGame);
+                        await Clients.mainClient.Connect(BotSettings.BotToken, TokenType.Bot);
+                        Clients.mainClient.SetGame(BotSettings.BotGame);
                         Timer t = null;
                         t = new Timer((obj) => { SetupChannels(); t.Dispose(); }, null, 1000, Timeout.Infinite);
                         Printer.Print("Connected!");
@@ -97,7 +109,7 @@ namespace bDiscord
         {
             try
             {
-                var server = client.Servers.FirstOrDefault();
+                var server = Clients.mainClient.Servers.FirstOrDefault();
                 Channels.MainChannel = server.FindChannels(BotSettings.MainChannelName, ChannelType.Text).FirstOrDefault();
                 Channels.TwitchChannel = server.FindChannels(BotSettings.StreamChannelName, ChannelType.Text).FirstOrDefault();
             }
@@ -137,12 +149,36 @@ namespace bDiscord
             catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
         }
 
+        private void TransferCheck(object state)
+        {
+            using(WebClient web = new WebClient())
+            {
+                web.Encoding = Encoding.UTF8;
+                string pageSource = web.DownloadString("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
+                HttpUtility.HtmlDecode(pageSource);
+                var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(pageSource);
+                Console.WriteLine(transfers.data.Count);
+                foreach(var transfer in transfers.data)
+                {
+                    if(LatestTransfer == null || transfer.id != LatestTransfer.id)
+                    {
+                        Printer.PrintTag("TransferCheck", "New transaction detected, sending info.");
+                        string finalString = String.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name
+                            , transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
+                        Channels.MainChannel.SendMessage(finalString);
+                        LatestTransfer = transfer;
+                        break;
+                    }
+                }
+            }
+        }
+
         private void LoadData()
         {
             if (File.ReadAllText(Files.ToppingFile).Length > 0)
             {
-                Lists.Toppings = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.ToppingFile));
-                Printer.Print("Loaded " + Lists.Toppings.Count + " toppings from file.");
+                Lists.ToppingsList = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(Files.ToppingFile));
+                Printer.Print("Loaded " + Lists.ToppingsList.Count + " toppings from file.");
             }
             else Printer.Print("No toppings to load.");
             if (File.ReadAllText(Files.CommandFile).Length > 0)
@@ -157,11 +193,18 @@ namespace bDiscord
                 Printer.Print("Loaded " + Lists.TwitchStreams.Count + " streams from file.");
             }
             else Printer.Print("No streams to load.");
+            if (File.ReadAllText(Files.ItemsFile).Length > 0)
+            {
+                Lists.ItemsList = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Files.ItemsFile));
+                Printer.Print("Loaded " + Lists.ItemsList.Count + " items from file.");
+            }
+            else Printer.Print("No items to load.");
         }
 
         private void CheckFiles()
         {
             if (!Directory.Exists(Files.BotFolder)) Directory.CreateDirectory(Files.BotFolder);
+            if (!File.Exists(Files.ItemsFile)) File.Create(Files.ItemsFile).Close();
             if (!File.Exists(Files.CommandFile)) File.Create(Files.CommandFile).Close();
             if (!File.Exists(Files.ToppingFile)) File.Create(Files.ToppingFile).Close();
             if (!File.Exists(Files.StreamFile)) File.Create(Files.StreamFile).Close();
@@ -177,9 +220,11 @@ namespace bDiscord
                 config.AppSettings.Settings.Add("BotGame", "bot_game");
                 config.AppSettings.Settings.Add("BotPrefix", "!");
                 config.AppSettings.Settings.Add("TwitchClientID", "twitch_client_id");
+                config.AppSettings.Settings.Add("SportsRadar", "sportsradar_api_key");
                 config.AppSettings.Settings.Add("MainChannel", "#main_channel_name");
                 config.AppSettings.Settings.Add("StreamChannel", "#stream_channel_name");
-                config.Save(ConfigurationSaveMode.Minimal);
+
+        config.Save(ConfigurationSaveMode.Minimal);
                 Printer.Print("Settings file created.");
             }
             else
@@ -189,6 +234,7 @@ namespace bDiscord
                 APIKeys.PastebinUser = config.AppSettings.Settings["PastebinUser"].Value;
                 APIKeys.PastebinPassword = config.AppSettings.Settings["PastebinPassword"].Value;
                 APIKeys.TwitchClientID = config.AppSettings.Settings["TwitchClientID"].Value;
+                APIKeys.SportsRadar = config.AppSettings.Settings["SportsRadar"].Value;
                 BotSettings.BotToken = config.AppSettings.Settings["BotToken"].Value;
                 BotSettings.MainChannelName = config.AppSettings.Settings["MainChannel"].Value;
                 BotSettings.StreamChannelName = config.AppSettings.Settings["StreamChannel"].Value;

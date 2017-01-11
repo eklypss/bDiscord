@@ -6,5 +6,6 @@ namespace bDiscord.Classes
     {
         public static Channel MainChannel;
         public static Channel TwitchChannel;
+        public static Channel VoiceChannel;
     }
 }

@@ -2,11 +2,10 @@
 {
     internal static class BotSettings
     {
-        public static string BotPrefix = "!";
-        public static string BotGame = "DGood";
+        public static string BotPrefix = string.Empty;
+        public static string BotGame = string.Empty;
         public static string BotToken = string.Empty;
-        public static string MainChannelName = "#hockeyfi";
-        public static string StreamChannelName = "#striimut";
-        public static string VoiceChannelName = "bot";
+        public static string MainChannelName = string.Empty;
+        public static string StreamChannelName = string.Empty;
     }
 }

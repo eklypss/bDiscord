@@ -6,5 +6,6 @@
         public static string PastebinUser = string.Empty;
         public static string PastebinPassword = string.Empty;
         public static string TwitchClientID = string.Empty;
+        public static string SportsRadar = string.Empty;
     }
 }
