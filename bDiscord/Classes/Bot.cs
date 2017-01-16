@@ -157,7 +157,6 @@ namespace bDiscord
                 string pageSource = web.DownloadString("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
                 HttpUtility.HtmlDecode(pageSource);
                 var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(pageSource);
-                Console.WriteLine(transfers.data.Count);
                 foreach(var transfer in transfers.data)
                 {
                     if(LatestTransfer == null || transfer.id != LatestTransfer.id)
@@ -224,7 +223,7 @@ namespace bDiscord
                 config.AppSettings.Settings.Add("MainChannel", "#main_channel_name");
                 config.AppSettings.Settings.Add("StreamChannel", "#stream_channel_name");
 
-        config.Save(ConfigurationSaveMode.Minimal);
+                config.Save(ConfigurationSaveMode.Minimal);
                 Printer.Print("Settings file created.");
             }
             else

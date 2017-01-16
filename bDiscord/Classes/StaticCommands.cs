@@ -330,31 +330,9 @@ namespace bDiscord.Classes
             {
                 try
                 {
-                    Printer.Print(parameters.Length + " k");
                     if (parameters.Length > 1)
                     {
-                        if (parameters[1] == "tomorrow")
-                        {
-                            using (WebClient web = new WebClient())
-                            {
-                                string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, APIKeys.SportsRadar);
-                                string pageSource = web.DownloadString(sourceURL);
-                                var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
-                                Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
-                                foreach (var test in schedule.games)
-                                {
-                                    var stringIndex = test.scheduled.IndexOf("T") + 1;
-                                    var gameTime = test.scheduled.Substring(stringIndex, test.scheduled.IndexOf("+") - stringIndex);
-                                    string[] time = gameTime.Split(':');
-                                    int hour = Int32.Parse(time[0]) + 2;
-                                    if (hour > 24) hour = hour - 24;
-                                    string hourFinal = hour + string.Empty;
-                                    if (hour < 10) hourFinal = "0" + hour;
-                                    Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + test.home.name + " - " + test.away.name);
-                                }
-                            }
-                        }
-                        else if (parameters[1] == "cs")
+                        if (parameters[1] == "cs")
                         {
                             using (WebClient web = new WebClient())
                             {
@@ -366,7 +344,7 @@ namespace bDiscord.Classes
                                 for (int i = 0; i < matches.Count; i++)
                                 {
                                     string[] row = new string[3];
-                                    row[0]= matches[i].teams[0].name;
+                                    row[0] = matches[i].teams[0].name;
                                     row[1] = matches[i].teams[1].name;
                                     row[2] = matches[i].time;
                                     table[i] = row;
@@ -374,25 +352,25 @@ namespace bDiscord.Classes
                                 Channels.MainChannel.SendMessage(tabulator.convert(table));
                             }
                         }
-                    }
-                    else
-                    {
-                        using (WebClient web = new WebClient())
+                        else if (parameters[1] == "nhl")
                         {
-                            string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day - 1, APIKeys.SportsRadar);
-                            string pageSource = web.DownloadString(sourceURL);
-                            var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
-                            Channels.MainChannel.SendMessage("**Games scheduled for " + (DateTime.Now.Day - 1) + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
-                            foreach (var test in schedule.games)
+                            using (WebClient web = new WebClient())
                             {
-                                var stringIndex = test.scheduled.IndexOf("T") + 1;
-                                var gameTime = test.scheduled.Substring(stringIndex, test.scheduled.IndexOf("+") - stringIndex);
-                                string[] time = gameTime.Split(':');
-                                int hour = Int32.Parse(time[0]) + 2;
-                                if (hour > 24) hour = hour - 24;
-                                string hourFinal = hour + string.Empty;
-                                if (hour < 10) hourFinal = "0" + hour;
-                                Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + test.home.name + " - " + test.away.name);
+                                string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, APIKeys.SportsRadar);
+                                string pageSource = web.DownloadString(sourceURL);
+                                var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
+                                Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
+                                foreach (var game in schedule.games)
+                                {
+                                    var stringIndex = game.scheduled.IndexOf("T") + 1;
+                                    var gameTime = game.scheduled.Substring(stringIndex, game.scheduled.IndexOf("+") - stringIndex);
+                                    string[] time = gameTime.Split(':');
+                                    int hour = Int32.Parse(time[0]) + 2;
+                                    if (hour > 24) hour = hour - 24;
+                                    string hourFinal = hour + string.Empty;
+                                    if (hour < 10) hourFinal = "0" + hour;
+                                    Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + game.home.name + " - " + game.away.name);
+                                }
                             }
                         }
                     }
