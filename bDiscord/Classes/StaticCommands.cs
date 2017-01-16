@@ -13,6 +13,7 @@ namespace bDiscord.Classes
     public static class StaticCommands
     {
         private static string latestFile = string.Empty;
+        private static Tabulate tabulator = new Tabulate();
 
         public static string CheckCommand(string commandText)
         {
@@ -351,6 +352,26 @@ namespace bDiscord.Classes
                                     if (hour < 10) hourFinal = "0" + hour;
                                     Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + test.home.name + " - " + test.away.name);
                                 }
+                            }
+                        }
+                        else if (parameters[1] == "cs")
+                        {
+                            using (WebClient web = new WebClient())
+                            {
+                                string url = "http://counter-strike.net/jsfeed/gosumatches?count=10";
+                                string html = web.DownloadString(url);
+                                List<CsMatch> matches = JsonConvert.DeserializeObject<List<CsMatch>>(html);
+                                string[][] table = new string[matches.Count][];
+
+                                for (int i = 0; i < matches.Count; i++)
+                                {
+                                    string[] row = new string[3];
+                                    row[0]= matches[i].teams[0].name;
+                                    row[1] = matches[i].teams[1].name;
+                                    row[2] = matches[i].time;
+                                    table[i] = row;
+                                }
+                                Channels.MainChannel.SendMessage(tabulator.convert(table));
                             }
                         }
                     }

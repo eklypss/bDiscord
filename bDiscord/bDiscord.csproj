@@ -131,6 +131,7 @@
     <Compile Include="Classes\Files.cs" />
     <Compile Include="Classes\ListManager.cs" />
     <Compile Include="Classes\Lists.cs" />
+    <Compile Include="Classes\Models\CsMatch.cs" />
     <Compile Include="Classes\Models\Command.cs" />
     <Compile Include="Classes\Models\EPPlayerStats.cs" />
     <Compile Include="Classes\Models\EPStats.cs" />
@@ -143,6 +144,7 @@
     <Compile Include="Classes\PasteManager.cs" />
     <Compile Include="Classes\Printer.cs" />
     <Compile Include="Classes\StaticCommands.cs" />
+    <Compile Include="Classes\Tabulate.cs" />
     <Compile Include="Starter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
