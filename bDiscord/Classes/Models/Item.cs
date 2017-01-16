@@ -2,7 +2,7 @@
 
 namespace bDiscord.Classes.Models
 {
-    class Item
+    internal class Item
     {
         public string euro_cents { get; set; }
         public string description { get; set; }

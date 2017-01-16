@@ -124,50 +124,50 @@ namespace bDiscord.Classes
                     {
                         case "del":
                         case "delete":
-                        {
-                            bool match = false;
-                            foreach (var command in Lists.CommandsList)
                             {
-                                if (command.Name == parameters[2])
+                                bool match = false;
+                                foreach (var command in Lists.CommandsList)
                                 {
-                                    cm.RemoveCommand(command);
-                                    match = true;
-                                    break;
+                                    if (command.Name == parameters[2])
+                                    {
+                                        cm.RemoveCommand(command);
+                                        match = true;
+                                        break;
+                                    }
                                 }
+                                if (!match)
+                                {
+                                    return "Command not found: **" + parameters[2] + "**";
+                                }
+                                break;
                             }
-                            if (!match)
-                            {
-                                return "Command not found: **" + parameters[2] + "**";
-                            }
-                            break;
-                        }
                         case "add":
-                        {
-                            bool match = false;
-                            foreach (var commandName in Lists.CommandsList)
                             {
-                                if (commandName.Name == parameters[2])
+                                bool match = false;
+                                foreach (var commandName in Lists.CommandsList)
                                 {
-                                    match = true;
-                                    break;
+                                    if (commandName.Name == parameters[2])
+                                    {
+                                        match = true;
+                                        break;
+                                    }
                                 }
+                                if (!match)
+                                {
+                                    string commandAction = commandText.Substring(commandText.LastIndexOf(parameters[2]) + parameters[2].Length + 1);
+                                    cm.AddCommand(parameters[2], commandAction);
+                                    return "Added command: " + parameters[2] + ", action: " + commandAction;
+                                }
+                                break;
                             }
-                            if (!match)
-                            {
-                                string commandAction = commandText.Substring(commandText.LastIndexOf(parameters[2]) + parameters[2].Length + 1);
-                                cm.AddCommand(parameters[2], commandAction);
-                                return "Added command: " + parameters[2] + ", action: " + commandAction;
-                            }
-                            break;
-                        }
                         case "list":
-                        {
-                            return PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile));
-                        }
+                            {
+                                return PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile));
+                            }
                         default:
-                        {
-                            return "Available commands: !commands add|delete|list";
-                        }
+                            {
+                                return "Available commands: !commands add|delete|list";
+                            }
                     }
                 }
             }
@@ -182,53 +182,53 @@ namespace bDiscord.Classes
                     switch (parameters[1])
                     {
                         case "add":
-                        {
-                            bool match = false;
-                            foreach (var stream in Lists.TwitchStreams)
                             {
-                                if (stream == parameters[2])
+                                bool match = false;
+                                foreach (var stream in Lists.TwitchStreams)
                                 {
-                                    match = true;
-                                    break;
+                                    if (stream == parameters[2])
+                                    {
+                                        match = true;
+                                        break;
+                                    }
                                 }
+                                if (!match)
+                                {
+                                    ListManager.AddStream(parameters[2]);
+                                    return "Added stream: **" + parameters[2] + "**";
+                                }
+                                else return "Stream **" + parameters[2] + "** is already in the list.";
                             }
-                            if (!match)
-                            {
-                                ListManager.AddStream(parameters[2]);
-                                return "Added stream: **" + parameters[2] + "**";
-                            }
-                            else return "Stream **" + parameters[2] + "** is already in the list.";
-                        }
                         case "delete":
-                        {
-                            bool match = false;
-                            foreach (var stream in Lists.TwitchStreams)
                             {
-                                if (stream == parameters[2])
+                                bool match = false;
+                                foreach (var stream in Lists.TwitchStreams)
                                 {
-                                    ListManager.RemoveStream(parameters[2]);
-                                    match = true;
-                                    break;
+                                    if (stream == parameters[2])
+                                    {
+                                        ListManager.RemoveStream(parameters[2]);
+                                        match = true;
+                                        break;
+                                    }
                                 }
+                                if (!match)
+                                {
+                                    return "Stream not found: **" + parameters[2] + "**";
+                                }
+                                else return "Stream removed: **" + parameters[2] + "**";
                             }
-                            if (!match)
-                            {
-                                return "Stream not found: **" + parameters[2] + "**";
-                            }
-                            else return "Stream removed: **" + parameters[2] + "**";
-                        }
                         case "list":
-                        {
-                            return PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
-                        }
+                            {
+                                return PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
+                            }
                         case "online":
-                        {
-                            return "**Streams online:** " + string.Join(", ", Lists.OnlineStreams);
-                        }
+                            {
+                                return "**Streams online:** " + string.Join(", ", Lists.OnlineStreams);
+                            }
                         default:
-                        {
-                            return "Available commands: !streams add|delete|list|online";
-                        }
+                            {
+                                return "Available commands: !streams add|delete|list|online";
+                            }
                     }
                 }
             }
@@ -239,89 +239,89 @@ namespace bDiscord.Classes
                     switch (parameters[1])
                     {
                         case "add":
-                        {
-                            bool match = false;
-                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings add") + "!toppings add".Length + 1);
-                            foreach (var topping in Lists.ToppingsList)
                             {
-                                if (topping == toppingName)
-                                {
-                                    match = true;
-                                    break;
-                                }
-                            }
-                            if (!match)
-                            {
-                                ListManager.AddTopping(toppingName);
-                                return "Added topping: " + toppingName;
-                            }
-                            else return "Topping **" + toppingName + "** already exists.";
-                        }
-                        case "delete":
-                        {
-                            bool match = false;
-                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings delete") + "!toppings delete".Length + 1);
-                            if (toppingName.Contains("*") && toppingName.Length > 3)
-                            {
-                                List<string> toppingsToRemove = new List<string>();
-                                string tempName = toppingName.Replace("*", string.Empty);
-                                foreach (var topping in Lists.ToppingsList)
-                                {
-                                    if (topping.Contains(tempName))
-                                    {
-                                        toppingsToRemove.Add(topping);
-                                        match = true;
-                                    }
-                                }
-                                if (toppingsToRemove.Count > 0)
-                                {
-                                    foreach (var topping in toppingsToRemove)
-                                    {
-                                        ListManager.RemoveTopping(topping);
-                                    }
-                                    return "Removed **" + toppingsToRemove.Count + "** toppings that contained: **'" + tempName + "'**";
-                                }
-                            }
-                            else
-                            {
+                                bool match = false;
+                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings add") + "!toppings add".Length + 1);
                                 foreach (var topping in Lists.ToppingsList)
                                 {
                                     if (topping == toppingName)
                                     {
-                                        ListManager.RemoveTopping(toppingName);
                                         match = true;
                                         break;
                                     }
                                 }
-                            }
-                            if (!match) return "Toppping does not exist!";
-                            else return "Topping " + toppingName + " removed.";
-                        }
-                        case "find":
-                        {
-                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings find") + "!toppings find".Length + 1);
-                            List<string> matches = new List<string>();
-                            foreach (var topping in Lists.ToppingsList)
-                            {
-                                if (topping.Contains(toppingName))
+                                if (!match)
                                 {
-                                    matches.Add(topping);
+                                    ListManager.AddTopping(toppingName);
+                                    return "Added topping: " + toppingName;
                                 }
+                                else return "Topping **" + toppingName + "** already exists.";
                             }
-                            if (matches.Count > 0)
+                        case "delete":
                             {
-                                return "Matches: " + string.Join(", ", matches);
+                                bool match = false;
+                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings delete") + "!toppings delete".Length + 1);
+                                if (toppingName.Contains("*") && toppingName.Length > 3)
+                                {
+                                    List<string> toppingsToRemove = new List<string>();
+                                    string tempName = toppingName.Replace("*", string.Empty);
+                                    foreach (var topping in Lists.ToppingsList)
+                                    {
+                                        if (topping.Contains(tempName))
+                                        {
+                                            toppingsToRemove.Add(topping);
+                                            match = true;
+                                        }
+                                    }
+                                    if (toppingsToRemove.Count > 0)
+                                    {
+                                        foreach (var topping in toppingsToRemove)
+                                        {
+                                            ListManager.RemoveTopping(topping);
+                                        }
+                                        return "Removed **" + toppingsToRemove.Count + "** toppings that contained: **'" + tempName + "'**";
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var topping in Lists.ToppingsList)
+                                    {
+                                        if (topping == toppingName)
+                                        {
+                                            ListManager.RemoveTopping(toppingName);
+                                            match = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!match) return "Toppping does not exist!";
+                                else return "Topping " + toppingName + " removed.";
                             }
-                            return "No matches!";
-                        }
+                        case "find":
+                            {
+                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings find") + "!toppings find".Length + 1);
+                                List<string> matches = new List<string>();
+                                foreach (var topping in Lists.ToppingsList)
+                                {
+                                    if (topping.Contains(toppingName))
+                                    {
+                                        matches.Add(topping);
+                                    }
+                                }
+                                if (matches.Count > 0)
+                                {
+                                    return "Matches: " + string.Join(", ", matches);
+                                }
+                                return "No matches!";
+                            }
                         case "list":
-                        {
-                            return PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
-                        }
+                            {
+                                return PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
+                            }
                         default:
-                        {
-                            return "Available commands: !toppings add|delete|find|list";
-                        }
+                            {
+                                return "Available commands: !toppings add|delete|find|list";
+                            }
                     }
                 }
                 else return "Available commands: !toppings add|delete|find|list";
@@ -396,40 +396,40 @@ namespace bDiscord.Classes
                             switch (leagueName)
                             {
                                 case "NHL":
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.NHL);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.NHL);
+                                        break;
+                                    }
                                 case "KHL":
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.KHL);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.KHL);
+                                        break;
+                                    }
                                 case "LIIGA":
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.Liiga);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.Liiga);
+                                        break;
+                                    }
                                 case "MESTIS":
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.Mestis);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.Mestis);
+                                        break;
+                                    }
                                 case "AHL":
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.AHL);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.AHL);
+                                        break;
+                                    }
                                 case "SHL":
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.SHL);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}&filter=latestPlayerStats.league.id={1}", playerName, (int)Enums.LeagueIDs.SHL);
+                                        break;
+                                    }
                                 default:
-                                {
-                                    teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}", playerName);
-                                    break;
-                                }
+                                    {
+                                        teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}", playerName);
+                                        break;
+                                    }
                             }
                         }
                         else
@@ -473,28 +473,28 @@ namespace bDiscord.Classes
                             switch (league)
                             {
                                 case "nhl":
-                                leagueID = (int)Enums.LeagueIDs.NHL;
-                                break;
+                                    leagueID = (int)Enums.LeagueIDs.NHL;
+                                    break;
 
                                 case "ahl":
-                                leagueID = (int)Enums.LeagueIDs.AHL;
-                                break;
+                                    leagueID = (int)Enums.LeagueIDs.AHL;
+                                    break;
 
                                 case "liiga":
-                                leagueID = (int)Enums.LeagueIDs.Liiga;
-                                break;
+                                    leagueID = (int)Enums.LeagueIDs.Liiga;
+                                    break;
 
                                 case "mestis":
-                                leagueID = (int)Enums.LeagueIDs.Mestis;
-                                break;
+                                    leagueID = (int)Enums.LeagueIDs.Mestis;
+                                    break;
 
                                 case "khl":
-                                leagueID = (int)Enums.LeagueIDs.KHL;
-                                break;
+                                    leagueID = (int)Enums.LeagueIDs.KHL;
+                                    break;
 
                                 case "shl":
-                                leagueID = (int)Enums.LeagueIDs.SHL;
-                                break;
+                                    leagueID = (int)Enums.LeagueIDs.SHL;
+                                    break;
                             }
                             if (stat == "points" || stat == "goals" || stat == "assists" || stat == "ppg" || stat == "svs" || stat == "pim")
                             {
@@ -502,54 +502,54 @@ namespace bDiscord.Classes
                                 switch (stat)
                                 {
                                     case "points":
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID)); 
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                     case "goals":
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=G%3Adesc&limit=5", leagueID));
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=G%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                     case "assists":
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=A%3Adesc&limit=5", leagueID));
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=A%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                     case "ppg":
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PPG%3Adesc&limit=5", leagueID));
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PPG%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                     case "svs":
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?limit=5&filter=league.id%3D{0}%26season.id%3D176%26GP%3E9&sort=SVP%3Adesc&limit=5", leagueID));
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?limit=5&filter=league.id%3D{0}%26season.id%3D176%26GP%3E9&sort=SVP%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                     case "pim":
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PIM%3Adesc&limit=5", leagueID));
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PIM%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                     default:
-                                    {
-                                        string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
-                                        HttpUtility.HtmlDecode(pageSource);
-                                        stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                                        break;
-                                    }
+                                        {
+                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
+                                            HttpUtility.HtmlDecode(pageSource);
+                                            stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
+                                            break;
+                                        }
                                 }
                                 if (stat == "svs")
                                 {
@@ -585,10 +585,10 @@ namespace bDiscord.Classes
             {
                 try
                 {
-                    using(WebClient web = new WebClient())
+                    using (WebClient web = new WebClient())
                     {
                         web.Encoding = Encoding.UTF8;
-                        if(parameters.Length < 4)
+                        if (parameters.Length < 4)
                         {
                             return "Usage: !scoring2 <league> <nationality> <TP/G/A/PPG/SVP/PIM>";
                         }
@@ -603,10 +603,10 @@ namespace bDiscord.Classes
                             string pageSource = web.DownloadString(url);
                             HttpUtility.HtmlDecode(pageSource);
                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
-                            if(stat == "SVS") stat = "SVP";
-                            if(stat == "goals") stat = "G";
-                            if(stat == "points") stat = "TP";
-                            if(stat == "assists") stat = "A";
+                            if (stat == "SVS") stat = "SVP";
+                            if (stat == "goals") stat = "G";
+                            if (stat == "points") stat = "TP";
+                            if (stat == "assists") stat = "A";
                             if (stat == "SVP" || stat == "GAA")
                             {
                                 for (int i = 0; i < 5; i++)
@@ -626,7 +626,8 @@ namespace bDiscord.Classes
                             return string.Empty;
                         }
                     }
-                } catch(Exception ex) { Printer.PrintTag("Exception", ex.Message); }
+                }
+                catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
             }
             if (commandText == "!täytteet")
             {

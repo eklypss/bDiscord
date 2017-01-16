@@ -4,7 +4,6 @@ namespace bDiscord.Classes.Models
 {
     public class Transfer
     {
-
         public class Metadata
         {
             public int limit { get; set; }
@@ -360,6 +359,5 @@ namespace bDiscord.Classes.Models
             public Metadata metadata { get; set; }
             public List<Datum> data { get; set; }
         }
-
     }
 }

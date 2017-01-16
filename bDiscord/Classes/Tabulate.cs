@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace bDiscord.Classes
 {
-    class Tabulate
+    internal class Tabulate
     {
         /// <summary>
         /// Convert Two-dimensional list to a nice table string.
@@ -40,7 +40,7 @@ namespace bDiscord.Classes
         private List<int> getColumnsLongest(string[][] table)
         {
             List<int> longest = new List<int>();
-            
+
             for (int i = 0; i < table[0].Length; i++)
             {
                 longest.Add(colLongest(table, i));

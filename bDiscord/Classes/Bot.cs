@@ -2,7 +2,9 @@
 using bDiscord.Classes.EventArgs;
 using bDiscord.Classes.Models;
 using Discord;
+using Discord.Audio;
 using Newtonsoft.Json;
+using RestSharp.Extensions.MonoHttp;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -11,8 +13,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using Discord.Audio;
-using RestSharp.Extensions.MonoHttp;
 using TwitchLib;
 using Channels = bDiscord.Classes.Channels;
 
@@ -23,6 +23,7 @@ namespace bDiscord
         public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);
 
         public event OnCommandReceivedEventHandler CommandReceived;
+
         private Timer twitchTimer;
         private Timer transferTimer;
         private CommandManager commandManager;
@@ -63,7 +64,6 @@ namespace bDiscord
                 {
                     x.Mode = AudioMode.Outgoing;
                     x.Bitrate = 128;
-                    
                 });
 
             try
@@ -151,15 +151,15 @@ namespace bDiscord
 
         private void TransferCheck(object state)
         {
-            using(WebClient web = new WebClient())
+            using (WebClient web = new WebClient())
             {
                 web.Encoding = Encoding.UTF8;
                 string pageSource = web.DownloadString("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
                 HttpUtility.HtmlDecode(pageSource);
                 var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(pageSource);
-                foreach(var transfer in transfers.data)
+                foreach (var transfer in transfers.data)
                 {
-                    if(LatestTransfer == null || transfer.id != LatestTransfer.id)
+                    if (LatestTransfer == null || transfer.id != LatestTransfer.id)
                     {
                         Printer.PrintTag("TransferCheck", "New transaction detected, sending info.");
                         string finalString = String.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name
