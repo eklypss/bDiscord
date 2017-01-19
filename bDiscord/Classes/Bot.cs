@@ -2,7 +2,6 @@
 using bDiscord.Classes.EventArgs;
 using bDiscord.Classes.Models;
 using Discord;
-using Discord.Audio;
 using Newtonsoft.Json;
 using RestSharp.Extensions.MonoHttp;
 using System;
@@ -13,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using TwitchLib;
 using Channels = bDiscord.Classes.Channels;
 
@@ -27,7 +27,7 @@ namespace bDiscord
         private Timer twitchTimer;
         private Timer transferTimer;
         private CommandManager commandManager;
-        private Transfer.Datum LatestTransfer;
+        private Transfer.Datum latestTransfer;
 
         public void Start()
         {
@@ -37,10 +37,13 @@ namespace bDiscord
             LoadData();
 
             Clients.mainClient = new DiscordClient();
-            twitchTimer = new Timer(TwitchCheck, null, 60000, 300000);
-            transferTimer = new Timer(TransferCheck, null, 5000, 60000);
             commandManager = new CommandManager();
-            commandManager.CommandAdded += OnCommandAdded;
+            twitchTimer = new Timer(TwitchCheck, null, 60000, 300000);
+            Task.Run(() =>
+            {
+                transferTimer = new Timer(TransferCheck, null, 5000, 60000);
+            });
+
             this.CommandReceived += OnCommandReceived;
             TwitchApi.SetClientId(APIKeys.TwitchClientID);
 
@@ -59,12 +62,6 @@ namespace bDiscord
             };
 
             #region Try to connect and handle errors
-
-            Clients.mainClient.UsingAudio(x =>
-                {
-                    x.Mode = AudioMode.Outgoing;
-                    x.Bitrate = 128;
-                });
 
             try
             {
@@ -90,11 +87,6 @@ namespace bDiscord
         private void OnCommandReceived(object source, CommandReceivedEventArgs args)
         {
             commandManager.CheckCommand(args.CommandName);
-        }
-
-        private void OnCommandAdded(object source, CommandEventArgs args)
-        {
-            Channels.MainChannel.SendMessage("Command added: " + args.Command.Name + ", action: " + args.Command.Action);
         }
 
         protected virtual void OnCommandReceived(string commandName)
@@ -149,24 +141,27 @@ namespace bDiscord
             catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
         }
 
-        private void TransferCheck(object state)
+        private async void TransferCheck(object state)
         {
-            using (WebClient web = new WebClient())
+            while (true)
             {
-                web.Encoding = Encoding.UTF8;
-                string pageSource = web.DownloadString("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
-                HttpUtility.HtmlDecode(pageSource);
-                var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(pageSource);
-                foreach (var transfer in transfers.data)
+                using (WebClient web = new WebClient())
                 {
-                    if (LatestTransfer == null || transfer.id != LatestTransfer.id)
+                    web.Encoding = Encoding.UTF8;
+                    string pageSource = await web.DownloadStringTaskAsync("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
+                    HttpUtility.HtmlDecode(pageSource);
+                    var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(pageSource);
+                    foreach (var transfer in transfers.data)
                     {
-                        Printer.PrintTag("TransferCheck", "New transaction detected, sending info.");
-                        string finalString = String.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name
-                            , transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
-                        Channels.MainChannel.SendMessage(finalString);
-                        LatestTransfer = transfer;
-                        break;
+                        if (latestTransfer == null || transfer.id != latestTransfer.id)
+                        {
+                            Printer.PrintTag("TransferCheck", "New transaction detected, sending info.");
+                            string finalString = String.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name
+                                , transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
+                            await Channels.MainChannel.SendMessage(finalString);
+                            latestTransfer = transfer;
+                            break;
+                        }
                     }
                 }
             }

@@ -58,13 +58,14 @@ namespace bDiscord.Classes
             OnCommandsSaved();
         }
 
-        public void CheckCommand(string commandName)
+        public async void CheckCommand(string commandName)
         {
-            if (StaticCommands.CheckCommand(commandName) != string.Empty)
+            string commandResponse = await StaticCommands.CheckCommand(commandName);
+            if (commandResponse != string.Empty)
             {
                 try
                 {
-                    Channels.MainChannel.SendMessage(StaticCommands.CheckCommand(commandName));
+                    await Channels.MainChannel.SendMessage(commandResponse);
                 }
                 catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
             }
@@ -74,7 +75,7 @@ namespace bDiscord.Classes
                 {
                     if (command.Name == commandName)
                     {
-                        Channels.MainChannel.SendMessage(command.Action);
+                        await Channels.MainChannel.SendMessage(command.Action);
                     }
                 }
             }

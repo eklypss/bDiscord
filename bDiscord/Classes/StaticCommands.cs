@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace bDiscord.Classes
@@ -15,52 +16,16 @@ namespace bDiscord.Classes
         private static string latestFile = string.Empty;
         private static Tabulate tabulator = new Tabulate();
 
-        public static string CheckCommand(string commandText)
+        public static async Task<string> CheckCommand(string commandText)
         {
             string[] parameters = commandText.Split(' ');
-            if (commandText.StartsWith("!roster ") && parameters.Length > 1)
-            {
-                try
-                {
-                    using (WebClient web = new WebClient())
-                    {
-                        string teamName = commandText.Substring(commandText.LastIndexOf("!roster") + "!roster".Length + 1);
-                        string teamURL = string.Format("http://nhlwc.cdnak.neulion.com/fs1/nhl/league/teamroster/{0}/iphone/clubroster.json", teamName);
-                        string pageSource = web.DownloadString(teamURL);
-                        var roster = JsonConvert.DeserializeObject<NHLRoster.RootObject>(pageSource);
-                        List<string> goalies = new List<string>();
-                        List<string> defensemen = new List<string>();
-                        List<string> forwards = new List<string>();
-
-                        foreach (var goalie in roster.goalie)
-                        {
-                            goalies.Add(goalie.name);
-                        }
-                        foreach (var defenseman in roster.defensemen)
-                        {
-                            defensemen.Add(defenseman.name);
-                        }
-                        foreach (var forward in roster.forwards)
-                        {
-                            forwards.Add(forward.name);
-                        }
-
-                        return teamName + " roster (" + roster.timestamp + ") **Goalies:** " + string.Join(", ", goalies) + " **Defense:** " + string.Join(", ", defensemen) + " **Offense:** " + string.Join(", ", forwards);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Printer.PrintTag("Exception", ex.Message);
-                    return string.Empty;
-                }
-            }
             if (commandText.StartsWith("!followage ") && parameters.Length >= 2)
             {
                 try
                 {
                     WebClient webClient = new WebClient();
                     string link = string.Format("https://api.rtainc.co/twitch/channels/{1}/followers/{0}?format=[2]", parameters[1], parameters[2]);
-                    string response = webClient.DownloadString(link);
+                    var response = await webClient.DownloadStringTaskAsync(link);
                     if (response.Contains("isn't following"))
                     {
                         return parameters[1] + " is not following " + parameters[2] + ".";
@@ -76,30 +41,11 @@ namespace bDiscord.Classes
                     return string.Empty;
                 }
             }
-            /* if (commandText.StartsWith("!sr ") && parameters.Length >= 1)
-             {
-                 try
-                 {
-                     string fileName = Guid.NewGuid().ToString();
-                     string folder = "D:/mp3/";
-                     AudioDownloader downloader = new AudioDownloader(parameters[1], fileName, folder);
-                     downloader.FinishedDownload += DownloaderOnFinishedDownload;
-                     FileInfo test = new FileInfo(folder + fileName);
-                     latestFile = test.FullName;
-                     Console.WriteLine("-> " + latestFile);
-                     downloader.Download();
-                 }
-                 catch (Exception ex)
-                 {
-                     Printer.PrintTag("Exception", ex.Message);
-                     return string.Empty;
-                 }
-             }*/
             if (commandText == "!kisu")
             {
                 using (WebClient web = new WebClient())
                 {
-                    string webPage = web.DownloadString("http://thecatapi.com/api/images/get?format=xml&results_per_page=1");
+                    string webPage = await web.DownloadStringTaskAsync("http://thecatapi.com/api/images/get?format=xml&results_per_page=1");
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml(webPage);
                     var attrVal = doc.SelectNodes("/response/data/images/image");
@@ -122,6 +68,7 @@ namespace bDiscord.Classes
                     CommandManager cm = new CommandManager();
                     switch (parameters[1])
                     {
+                        case "remove":
                         case "del":
                         case "delete":
                             {
@@ -332,46 +279,66 @@ namespace bDiscord.Classes
                 {
                     if (parameters.Length > 1)
                     {
-                        if (parameters[1] == "cs")
+                        switch (parameters[1])
                         {
-                            using (WebClient web = new WebClient())
-                            {
-                                string url = "http://counter-strike.net/jsfeed/gosumatches?count=10";
-                                string html = web.DownloadString(url);
-                                List<CsMatch> matches = JsonConvert.DeserializeObject<List<CsMatch>>(html);
-                                string[][] table = new string[matches.Count][];
+                            case "cs":
+                                {
+                                    using (WebClient web = new WebClient())
+                                    {
+                                        string url = "http://counter-strike.net/jsfeed/gosumatches?count=10";
+                                        string html = await web.DownloadStringTaskAsync(url);
+                                        List<CsMatch> matches = JsonConvert.DeserializeObject<List<CsMatch>>(html);
+                                        string[][] table = new string[matches.Count][];
 
-                                for (int i = 0; i < matches.Count; i++)
-                                {
-                                    string[] row = new string[3];
-                                    row[0] = matches[i].teams[0].name;
-                                    row[1] = matches[i].teams[1].name;
-                                    row[2] = matches[i].time;
-                                    table[i] = row;
+                                        for (int i = 0; i < matches.Count; i++)
+                                        {
+                                            string[] row = new string[3];
+                                            row[0] = matches[i].teams[0].name;
+                                            row[1] = matches[i].teams[1].name;
+                                            row[2] = matches[i].time;
+                                            table[i] = row;
+                                        }
+                                        await Channels.MainChannel.SendMessage(tabulator.convert(table));
+                                    }
+                                    break;
                                 }
-                                Channels.MainChannel.SendMessage(tabulator.convert(table));
-                            }
-                        }
-                        else if (parameters[1] == "nhl")
-                        {
-                            using (WebClient web = new WebClient())
-                            {
-                                string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, APIKeys.SportsRadar);
-                                string pageSource = web.DownloadString(sourceURL);
-                                var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
-                                Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
-                                foreach (var game in schedule.games)
+                            case "nhl":
                                 {
-                                    var stringIndex = game.scheduled.IndexOf("T") + 1;
-                                    var gameTime = game.scheduled.Substring(stringIndex, game.scheduled.IndexOf("+") - stringIndex);
-                                    string[] time = gameTime.Split(':');
-                                    int hour = Int32.Parse(time[0]) + 2;
-                                    if (hour > 24) hour = hour - 24;
-                                    string hourFinal = hour + string.Empty;
-                                    if (hour < 10) hourFinal = "0" + hour;
-                                    Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + game.home.name + " - " + game.away.name);
+                                    using (WebClient web = new WebClient())
+                                    {
+                                        string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, APIKeys.SportsRadar);
+                                        string pageSource = await web.DownloadStringTaskAsync(sourceURL);
+                                        var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
+                                        await Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
+                                        foreach (var game in schedule.games)
+                                        {
+                                            var stringIndex = game.scheduled.IndexOf("T") + 1;
+                                            var gameTime = game.scheduled.Substring(stringIndex, game.scheduled.IndexOf("+") - stringIndex);
+                                            string[] time = gameTime.Split(':');
+                                            int hour = Int32.Parse(time[0]) + 2;
+                                            if (hour > 24) hour = hour - 24;
+                                            string hourFinal = hour + string.Empty;
+                                            if (hour < 10) hourFinal = "0" + hour;
+                                            await Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + game.home.name + " - " + game.away.name);
+                                        }
+                                    }
+                                    break;
                                 }
-                            }
+                            case "liiga":
+                                {
+                                    var liigaGames = await GameFetcher.GetLiigaGames();
+                                    await Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
+                                    foreach (var game in liigaGames)
+                                    {
+                                        await Channels.MainChannel.SendMessage("[" + game.StartTime + "] " + game.HomeTeamName + " - " + game.AwayTeamName);
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    await Channels.MainChannel.SendMessage("Available parameters: nhl, cs, liiga");
+                                    break;
+                                }
                         }
                     }
                 }
@@ -437,7 +404,7 @@ namespace bDiscord.Classes
                             playerName = commandText.Substring(commandText.LastIndexOf("!stats") + "!stats".Length + 1);
                             teamURL = string.Format("http://api.eliteprospects.com/beta/search?type=player&q={0}", playerName);
                         }
-                        string pageSource = web.DownloadString(teamURL);
+                        string pageSource = await web.DownloadStringTaskAsync(teamURL);
                         var roster = JsonConvert.DeserializeObject<EPPlayerStats.RootObject>(pageSource);
                         if (roster.players.data[0].playerPosition == "GOALIE")
                         {
@@ -503,49 +470,49 @@ namespace bDiscord.Classes
                                 {
                                     case "points":
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
                                         }
                                     case "goals":
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=G%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=G%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
                                         }
                                     case "assists":
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=A%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=A%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
                                         }
                                     case "ppg":
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PPG%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PPG%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
                                         }
                                     case "svs":
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?limit=5&filter=league.id%3D{0}%26season.id%3D176%26GP%3E9&sort=SVP%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?limit=5&filter=league.id%3D{0}%26season.id%3D176%26GP%3E9&sort=SVP%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
                                         }
                                     case "pim":
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PIM%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=PIM%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
                                         }
                                     default:
                                         {
-                                            string pageSource = web.DownloadString(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
+                                            string pageSource = await web.DownloadStringTaskAsync(string.Format("http://api.eliteprospects.com/beta/playerstats?filter=league.id%3D{0}%26season.id%3D176%26gameType%3DREGULAR_SEASON&sort=TP%3Adesc&limit=5", leagueID));
                                             HttpUtility.HtmlDecode(pageSource);
                                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                                             break;
@@ -556,7 +523,7 @@ namespace bDiscord.Classes
                                     for (int i = 0; i < 5; i++)
                                     {
                                         int number = i + 1;
-                                        Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **SVS%:** " + stats.data[i].SVP + " **GAA:** " + stats.data[i].GAA);
+                                        await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **SVS%:** " + stats.data[i].SVP + " **GAA:** " + stats.data[i].GAA);
                                     }
                                 }
                                 else
@@ -564,7 +531,7 @@ namespace bDiscord.Classes
                                     for (int i = 0; i < 5; i++)
                                     {
                                         int number = i + 1;
-                                        Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **G:** " + stats.data[i].G + " **A:** " + stats.data[i].A + " **TP:** " + stats.data[i].TP + " **PPG:** " + stats.data[i].PPG + " **PIM:** " + stats.data[i].PIM);
+                                        await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **G:** " + stats.data[i].G + " **A:** " + stats.data[i].A + " **TP:** " + stats.data[i].TP + " **PPG:** " + stats.data[i].PPG + " **PIM:** " + stats.data[i].PIM);
                                     }
                                 }
                                 return string.Empty;
@@ -600,7 +567,7 @@ namespace bDiscord.Classes
                             string stat = parameters[3].ToUpper();
                             string url = string.Format("http://api.eliteprospects.com/beta/playerstats?filter=player.country.name={0}%26league.name={1}%26season.startYear=2016&gameType=REGULAR_SEASON&sort={2}:desc&limit=5", nationality, league, stat);
                             Printer.Print(url);
-                            string pageSource = web.DownloadString(url);
+                            string pageSource = await web.DownloadStringTaskAsync(url);
                             HttpUtility.HtmlDecode(pageSource);
                             stats = JsonConvert.DeserializeObject<EPStats.RootObject>(pageSource);
                             if (stat == "SVS") stat = "SVP";
@@ -612,7 +579,7 @@ namespace bDiscord.Classes
                                 for (int i = 0; i < 5; i++)
                                 {
                                     int number = i + 1;
-                                    Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **SVS%:** " + stats.data[i].SVP + " **GAA:** " + stats.data[i].GAA);
+                                    await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **SVS%:** " + stats.data[i].SVP + " **GAA:** " + stats.data[i].GAA);
                                 }
                             }
                             else
@@ -620,7 +587,7 @@ namespace bDiscord.Classes
                                 for (int i = 0; i < 5; i++)
                                 {
                                     int number = i + 1;
-                                    Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **G:** " + stats.data[i].G + " **A:** " + stats.data[i].A + " **TP:** " + stats.data[i].TP + " **PPG:** " + stats.data[i].PPG + " **PIM:** " + stats.data[i].PIM);
+                                    await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **G:** " + stats.data[i].G + " **A:** " + stats.data[i].A + " **TP:** " + stats.data[i].TP + " **PPG:** " + stats.data[i].PPG + " **PIM:** " + stats.data[i].PIM);
                                 }
                             }
                             return string.Empty;
