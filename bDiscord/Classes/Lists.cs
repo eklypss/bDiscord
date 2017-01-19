@@ -1,14 +1,14 @@
-﻿using bDiscord.Classes.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using bDiscord.Classes.Models;
 
 namespace bDiscord.Classes
 {
     internal static class Lists
     {
-        public static readonly List<string> OnlineStreams = new List<string>();
-        public static List<string> ToppingsList = new List<string>();
-        public static List<string> TwitchStreams = new List<string>();
-        public static List<Command> CommandsList = new List<Command>();
-        public static List<Item> ItemsList = new List<Item>();
+        public static List<string> OnlineStreams { get; set; } = new List<string>();
+        public static List<string> ToppingsList { get; set; } = new List<string>();
+        public static List<string> TwitchStreams { get; set; } = new List<string>();
+        public static List<Command> CommandsList { get; set; } = new List<Command>();
+        public static List<Item> ItemsList { get; set; } = new List<Item>();
     }
 }

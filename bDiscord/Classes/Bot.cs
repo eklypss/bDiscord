@@ -1,10 +1,4 @@
-﻿using bDiscord.Classes;
-using bDiscord.Classes.EventArgs;
-using bDiscord.Classes.Models;
-using Discord;
-using Newtonsoft.Json;
-using RestSharp.Extensions.MonoHttp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -13,6 +7,12 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using bDiscord.Classes;
+using bDiscord.Classes.EventArgs;
+using bDiscord.Classes.Models;
+using Discord;
+using Newtonsoft.Json;
+using RestSharp.Extensions.MonoHttp;
 using TwitchLib;
 using Channels = bDiscord.Classes.Channels;
 
@@ -20,23 +20,21 @@ namespace bDiscord
 {
     public class Bot
     {
-        public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);
-
-        public event OnCommandReceivedEventHandler CommandReceived;
-
         private Timer twitchTimer;
         private Timer transferTimer;
         private CommandManager commandManager;
         private Transfer.Datum latestTransfer;
 
+        public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);
+
+        public event OnCommandReceivedEventHandler CommandReceived;
+
         public void Start()
         {
-            #region Setup
-
             CheckFiles();
             LoadData();
 
-            Clients.mainClient = new DiscordClient();
+            Clients.MainClient = new DiscordClient();
             commandManager = new CommandManager();
             twitchTimer = new Timer(TwitchCheck, null, 60000, 300000);
             Task.Run(() =>
@@ -47,9 +45,7 @@ namespace bDiscord
             this.CommandReceived += OnCommandReceived;
             TwitchApi.SetClientId(APIKeys.TwitchClientID);
 
-            #endregion Setup
-
-            Clients.mainClient.MessageReceived += (sender, e) =>
+            Clients.MainClient.MessageReceived += (sender, e) =>
             {
                 if (!e.Message.IsAuthor)
                 {
@@ -61,14 +57,12 @@ namespace bDiscord
                 Printer.Print("[" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
             };
 
-            #region Try to connect and handle errors
-
             try
             {
-                Clients.mainClient.ExecuteAndWait(async () =>
+                Clients.MainClient.ExecuteAndWait(async () =>
                     {
-                        await Clients.mainClient.Connect(BotSettings.BotToken, TokenType.Bot);
-                        Clients.mainClient.SetGame(BotSettings.BotGame);
+                        await Clients.MainClient.Connect(BotSettings.BotToken, TokenType.Bot);
+                        Clients.MainClient.SetGame(BotSettings.BotGame);
                         Timer t = null;
                         t = new Timer((obj) => { SetupChannels(); t.Dispose(); }, null, 1000, Timeout.Infinite);
                         Printer.Print("Connected!");
@@ -80,8 +74,11 @@ namespace bDiscord
                 Printer.PrintTag("Exception", "Make sure your bot token in settings/keys.config file is valid.");
                 Console.ReadLine();
             }
+        }
 
-            #endregion Try to connect and handle errors
+        protected virtual void OnCommandReceived(string commandName)
+        {
+            CommandReceived?.Invoke(this, new CommandReceivedEventArgs() { CommandName = commandName });
         }
 
         private void OnCommandReceived(object source, CommandReceivedEventArgs args)
@@ -89,23 +86,18 @@ namespace bDiscord
             commandManager.CheckCommand(args.CommandName);
         }
 
-        protected virtual void OnCommandReceived(string commandName)
-        {
-            if (CommandReceived != null)
-            {
-                CommandReceived(this, new CommandReceivedEventArgs() { CommandName = commandName });
-            }
-        }
-
         private void SetupChannels()
         {
             try
             {
-                var server = Clients.mainClient.Servers.FirstOrDefault();
+                var server = Clients.MainClient.Servers.FirstOrDefault();
                 Channels.MainChannel = server.FindChannels(BotSettings.MainChannelName, ChannelType.Text).FirstOrDefault();
                 Channels.TwitchChannel = server.FindChannels(BotSettings.StreamChannelName, ChannelType.Text).FirstOrDefault();
             }
-            catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
+            catch (Exception ex)
+            {
+                Printer.PrintTag("Exception", ex.Message);
+            }
         }
 
         private void TwitchCheck(object state)
@@ -138,7 +130,10 @@ namespace bDiscord
                     }
                 }
             }
-            catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
+            catch (Exception ex)
+            {
+                Printer.PrintTag("Exception", ex.Message);
+            }
         }
 
         private async void TransferCheck(object state)
@@ -149,15 +144,12 @@ namespace bDiscord
                 {
                     web.Encoding = Encoding.UTF8;
                     string pageSource = await web.DownloadStringTaskAsync("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
-                    HttpUtility.HtmlDecode(pageSource);
-                    var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(pageSource);
+                    var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(HttpUtility.HtmlDecode(pageSource));
                     foreach (var transfer in transfers.data)
                     {
                         if (latestTransfer == null || transfer.id != latestTransfer.id)
                         {
-                            Printer.PrintTag("TransferCheck", "New transaction detected, sending info.");
-                            string finalString = String.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name
-                                , transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
+                            string finalString = string.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name, transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
                             await Channels.MainChannel.SendMessage(finalString);
                             latestTransfer = transfer;
                             break;

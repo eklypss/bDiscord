@@ -4,6 +4,6 @@ namespace bDiscord.Classes
 {
     public static class Clients
     {
-        public static DiscordClient mainClient;
+        public static DiscordClient MainClient { get; set; }
     }
 }

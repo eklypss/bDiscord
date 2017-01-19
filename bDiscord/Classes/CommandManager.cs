@@ -1,8 +1,8 @@
-﻿using bDiscord.Classes.EventArgs;
+﻿using System;
+using System.IO;
+using bDiscord.Classes.EventArgs;
 using bDiscord.Classes.Models;
 using Newtonsoft.Json;
-using System;
-using System.IO;
 
 namespace bDiscord.Classes
 {
@@ -67,7 +67,10 @@ namespace bDiscord.Classes
                 {
                     await Channels.MainChannel.SendMessage(commandResponse);
                 }
-                catch (Exception ex) { Printer.PrintTag("Exception", ex.Message); }
+                catch (Exception ex)
+                {
+                    Printer.PrintTag("Exception", ex.Message);
+                }
             }
             else
             {

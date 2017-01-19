@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 
-// ReSharper disable All
-
 namespace bDiscord.Classes.Models
 {
     public class EPStats

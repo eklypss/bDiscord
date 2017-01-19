@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace bDiscord.Classes
 {
@@ -14,42 +13,42 @@ namespace bDiscord.Classes
         /// <returns>
         /// Table string with code prefix and suffix for discord monospaced formatting.
         /// </returns>
-        public string convert(string[][] table)
+        public string Convert(string[][] table)
         {
-            List<int> spacing = getColumnsLongest(table);
+            List<int> spacing = GetColumnsLongest(table);
             string response = "```";
 
             for (int i = 0; i < table.Length; i++)
             {
-                response += "\n" + joinRow(table[i], spacing);
+                response += "\n" + JoinRow(table[i], spacing);
             }
             return response + "```";
         }
 
-        private string joinRow(string[] row, List<int> spacing)
+        private string JoinRow(string[] row, List<int> spacing)
         {
-            string res = "";
+            string res = string.Empty;
             for (int i = 0; i < row.Length; i++)
             {
                 string form = "{0, -" + spacing[i] + "} ";
-                res += String.Format(form, row[i]);
+                res += string.Format(form, row[i]);
             }
             return res;
         }
 
-        private List<int> getColumnsLongest(string[][] table)
+        private List<int> GetColumnsLongest(string[][] table)
         {
             List<int> longest = new List<int>();
 
             for (int i = 0; i < table[0].Length; i++)
             {
-                longest.Add(colLongest(table, i));
+                longest.Add(ColLongest(table, i));
             }
 
             return longest;
         }
 
-        private int colLongest(string[][] table, int column)
+        private int ColLongest(string[][] table, int column)
         {
             int longest = -1;
             for (int row = 0; row < table.Length; row++)
