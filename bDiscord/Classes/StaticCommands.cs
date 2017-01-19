@@ -71,50 +71,50 @@ namespace bDiscord.Classes
                         case "remove":
                         case "del":
                         case "delete":
+                        {
+                            bool match = false;
+                            foreach (var command in Lists.CommandsList)
                             {
-                                bool match = false;
-                                foreach (var command in Lists.CommandsList)
+                                if (command.Name == parameters[2])
                                 {
-                                    if (command.Name == parameters[2])
-                                    {
-                                        cm.RemoveCommand(command);
-                                        match = true;
-                                        break;
-                                    }
+                                    cm.RemoveCommand(command);
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    return "Command not found: **" + parameters[2] + "**";
-                                }
-                                break;
                             }
+                            if (!match)
+                            {
+                                return "Command not found: **" + parameters[2] + "**";
+                            }
+                            break;
+                        }
                         case "add":
+                        {
+                            bool match = false;
+                            foreach (var commandName in Lists.CommandsList)
                             {
-                                bool match = false;
-                                foreach (var commandName in Lists.CommandsList)
+                                if (commandName.Name == parameters[2])
                                 {
-                                    if (commandName.Name == parameters[2])
-                                    {
-                                        match = true;
-                                        break;
-                                    }
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    string commandAction = commandText.Substring(commandText.LastIndexOf(parameters[2]) + parameters[2].Length + 1);
-                                    cm.AddCommand(parameters[2], commandAction);
-                                    return "Added command: " + parameters[2] + ", action: " + commandAction;
-                                }
-                                break;
                             }
+                            if (!match)
+                            {
+                                string commandAction = commandText.Substring(commandText.LastIndexOf(parameters[2]) + parameters[2].Length + 1);
+                                cm.AddCommand(parameters[2], commandAction);
+                                return "Added command: " + parameters[2] + ", action: " + commandAction;
+                            }
+                            break;
+                        }
                         case "list":
-                            {
-                                return PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile));
-                            }
+                        {
+                            return await PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile));
+                        }
                         default:
-                            {
-                                return "Available commands: !commands add|delete|list";
-                            }
+                        {
+                            return "Available commands: !commands add|delete|list";
+                        }
                     }
                 }
             }
@@ -129,53 +129,53 @@ namespace bDiscord.Classes
                     switch (parameters[1])
                     {
                         case "add":
+                        {
+                            bool match = false;
+                            foreach (var stream in Lists.TwitchStreams)
                             {
-                                bool match = false;
-                                foreach (var stream in Lists.TwitchStreams)
+                                if (stream == parameters[2])
                                 {
-                                    if (stream == parameters[2])
-                                    {
-                                        match = true;
-                                        break;
-                                    }
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    ListManager.AddStream(parameters[2]);
-                                    return "Added stream: **" + parameters[2] + "**";
-                                }
-                                else return "Stream **" + parameters[2] + "** is already in the list.";
                             }
+                            if (!match)
+                            {
+                                ListManager.AddStream(parameters[2]);
+                                return "Added stream: **" + parameters[2] + "**";
+                            }
+                            else return "Stream **" + parameters[2] + "** is already in the list.";
+                        }
                         case "delete":
+                        {
+                            bool match = false;
+                            foreach (var stream in Lists.TwitchStreams)
                             {
-                                bool match = false;
-                                foreach (var stream in Lists.TwitchStreams)
+                                if (stream == parameters[2])
                                 {
-                                    if (stream == parameters[2])
-                                    {
-                                        ListManager.RemoveStream(parameters[2]);
-                                        match = true;
-                                        break;
-                                    }
+                                    ListManager.RemoveStream(parameters[2]);
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    return "Stream not found: **" + parameters[2] + "**";
-                                }
-                                else return "Stream removed: **" + parameters[2] + "**";
                             }
+                            if (!match)
+                            {
+                                return "Stream not found: **" + parameters[2] + "**";
+                            }
+                            else return "Stream removed: **" + parameters[2] + "**";
+                        }
                         case "list":
-                            {
-                                return PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
-                            }
+                        {
+                            return await PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
+                        }
                         case "online":
-                            {
-                                return "**Streams online:** " + string.Join(", ", Lists.OnlineStreams);
-                            }
+                        {
+                            return "**Streams online:** " + string.Join(", ", Lists.OnlineStreams);
+                        }
                         default:
-                            {
-                                return "Available commands: !streams add|delete|list|online";
-                            }
+                        {
+                            return "Available commands: !streams add|delete|list|online";
+                        }
                     }
                 }
             }
@@ -186,89 +186,89 @@ namespace bDiscord.Classes
                     switch (parameters[1])
                     {
                         case "add":
+                        {
+                            bool match = false;
+                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings add") + "!toppings add".Length + 1);
+                            foreach (var topping in Lists.ToppingsList)
                             {
-                                bool match = false;
-                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings add") + "!toppings add".Length + 1);
+                                if (topping == toppingName)
+                                {
+                                    match = true;
+                                    break;
+                                }
+                            }
+                            if (!match)
+                            {
+                                ListManager.AddTopping(toppingName);
+                                return "Added topping: " + toppingName;
+                            }
+                            else return "Topping **" + toppingName + "** already exists.";
+                        }
+                        case "delete":
+                        {
+                            bool match = false;
+                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings delete") + "!toppings delete".Length + 1);
+                            if (toppingName.Contains("*") && toppingName.Length > 3)
+                            {
+                                List<string> toppingsToRemove = new List<string>();
+                                string tempName = toppingName.Replace("*", string.Empty);
+                                foreach (var topping in Lists.ToppingsList)
+                                {
+                                    if (topping.Contains(tempName))
+                                    {
+                                        toppingsToRemove.Add(topping);
+                                        match = true;
+                                    }
+                                }
+                                if (toppingsToRemove.Count > 0)
+                                {
+                                    foreach (var topping in toppingsToRemove)
+                                    {
+                                        ListManager.RemoveTopping(topping);
+                                    }
+                                    return "Removed **" + toppingsToRemove.Count + "** toppings that contained: **'" + tempName + "'**";
+                                }
+                            }
+                            else
+                            {
                                 foreach (var topping in Lists.ToppingsList)
                                 {
                                     if (topping == toppingName)
                                     {
+                                        ListManager.RemoveTopping(toppingName);
                                         match = true;
                                         break;
                                     }
                                 }
-                                if (!match)
-                                {
-                                    ListManager.AddTopping(toppingName);
-                                    return "Added topping: " + toppingName;
-                                }
-                                else return "Topping **" + toppingName + "** already exists.";
                             }
-                        case "delete":
-                            {
-                                bool match = false;
-                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings delete") + "!toppings delete".Length + 1);
-                                if (toppingName.Contains("*") && toppingName.Length > 3)
-                                {
-                                    List<string> toppingsToRemove = new List<string>();
-                                    string tempName = toppingName.Replace("*", string.Empty);
-                                    foreach (var topping in Lists.ToppingsList)
-                                    {
-                                        if (topping.Contains(tempName))
-                                        {
-                                            toppingsToRemove.Add(topping);
-                                            match = true;
-                                        }
-                                    }
-                                    if (toppingsToRemove.Count > 0)
-                                    {
-                                        foreach (var topping in toppingsToRemove)
-                                        {
-                                            ListManager.RemoveTopping(topping);
-                                        }
-                                        return "Removed **" + toppingsToRemove.Count + "** toppings that contained: **'" + tempName + "'**";
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (var topping in Lists.ToppingsList)
-                                    {
-                                        if (topping == toppingName)
-                                        {
-                                            ListManager.RemoveTopping(toppingName);
-                                            match = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (!match) return "Toppping does not exist!";
-                                else return "Topping " + toppingName + " removed.";
-                            }
+                            if (!match) return "Toppping does not exist!";
+                            else return "Topping " + toppingName + " removed.";
+                        }
                         case "find":
+                        {
+                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings find") + "!toppings find".Length + 1);
+                            List<string> matches = new List<string>();
+                            foreach (var topping in Lists.ToppingsList)
                             {
-                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings find") + "!toppings find".Length + 1);
-                                List<string> matches = new List<string>();
-                                foreach (var topping in Lists.ToppingsList)
+                                if (topping.Contains(toppingName))
                                 {
-                                    if (topping.Contains(toppingName))
-                                    {
-                                        matches.Add(topping);
-                                    }
+                                    matches.Add(topping);
                                 }
-                                if (matches.Count > 0)
-                                {
-                                    return "Matches: " + string.Join(", ", matches);
-                                }
-                                return "No matches!";
                             }
+                            if (matches.Count > 0)
+                            {
+                                return "Matches: " + string.Join(", ", matches);
+                            }
+                            return "No matches!";
+                        }
                         case "list":
-                            {
-                                return PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
-                            }
+                        {
+                            return await PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
+                        }
                         default:
-                            {
-                                return "Available commands: !toppings add|delete|find|list";
-                            }
+                        {
+                            return "Available commands: !toppings add|delete|find|list";
+                        }
                     }
                 }
                 else return "Available commands: !toppings add|delete|find|list";

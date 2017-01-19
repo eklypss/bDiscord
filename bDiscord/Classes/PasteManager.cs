@@ -1,12 +1,13 @@
 ﻿using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace bDiscord.Classes
 {
     public static class PasteManager
     {
-        public static string CreatePaste(string name, string content)
+        public static async Task<string> CreatePaste(string name, string content)
         {
             NameValueCollection pastebinLogin = new NameValueCollection();
             pastebinLogin.Add("api_dev_key", APIKeys.Pastebin);
@@ -28,7 +29,7 @@ namespace bDiscord.Classes
 
             using (WebClient web = new WebClient())
             {
-                string response = Encoding.UTF8.GetString(web.UploadValues("http://pastebin.com/api/api_post.php", pastebinQuery));
+                string response = Encoding.UTF8.GetString(await web.UploadValuesTaskAsync("http://pastebin.com/api/api_post.php", pastebinQuery));
                 Printer.PrintTag("PasteManager", "Paste created: " + name + " - " + response);
                 return response;
             }
