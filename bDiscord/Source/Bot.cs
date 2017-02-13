@@ -22,7 +22,7 @@ namespace bDiscord
     {
         private Timer twitchTimer;
         private Timer transferTimer;
-        private CommandManager commandManager;
+        private static CommandManager commandManager;
         private Transfer.Datum latestTransfer;
 
         public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);

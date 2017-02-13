@@ -8,6 +8,8 @@ namespace bDiscord.Classes
 {
     public class CommandManager
     {
+        private static CommandManager instance;
+
         public delegate void OnCommandAddedEventHandler(object source, CommandEventArgs args);
 
         public delegate void OnCommandRemoveddEventHandler(object source, CommandEventArgs args);
@@ -19,6 +21,21 @@ namespace bDiscord.Classes
         public event OnCommandRemoveddEventHandler CommandRemoved;
 
         public event OnCommandsSavedEventHandler CommandsSaved;
+
+
+        public CommandManager() { }
+
+        public CommandManager Instance
+        {
+            get
+            {
+                if(instance == null)
+                {
+                    instance = new CommandManager();
+                }
+                return instance;
+            }
+        }
 
         public void AddCommand(string name, string action)
         {
