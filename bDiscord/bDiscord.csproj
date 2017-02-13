@@ -118,35 +118,37 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\APIKeys.cs" />
-    <Compile Include="Classes\Bot.cs" />
-    <Compile Include="Classes\BotSettings.cs" />
-    <Compile Include="Classes\Channels.cs" />
-    <Compile Include="Classes\Clients.cs" />
-    <Compile Include="Classes\CommandManager.cs" />
-    <Compile Include="Classes\Enums.cs" />
-    <Compile Include="Classes\EventArgs\CommandEventArgs.cs" />
-    <Compile Include="Classes\EventArgs\CommandReceivedEventArgs.cs" />
-    <Compile Include="Classes\Files.cs" />
-    <Compile Include="Classes\GameFetcher.cs" />
-    <Compile Include="Classes\ListManager.cs" />
-    <Compile Include="Classes\Lists.cs" />
-    <Compile Include="Classes\Models\CsMatch.cs" />
-    <Compile Include="Classes\Models\Command.cs" />
-    <Compile Include="Classes\Models\EPPlayerStats.cs" />
-    <Compile Include="Classes\Models\EPStats.cs" />
-    <Compile Include="Classes\Models\Item.cs" />
-    <Compile Include="Classes\Models\LiigaGame.cs" />
-    <Compile Include="Classes\Models\NHLRoster.cs">
+    <Compile Include="Source\Interfaces\IStaticCommand.cs" />
+    <Compile Include="Source\Settings\APIKeys.cs" />
+    <Compile Include="Source\Bot.cs" />
+    <Compile Include="Source\Settings\BotSettings.cs" />
+    <Compile Include="Source\Settings\Channels.cs" />
+    <Compile Include="Source\Settings\Clients.cs" />
+    <Compile Include="Source\Commands\CommandManager.cs" />
+    <Compile Include="Source\Settings\Enums.cs" />
+    <Compile Include="Source\EventArgs\CommandEventArgs.cs" />
+    <Compile Include="Source\EventArgs\CommandReceivedEventArgs.cs" />
+    <Compile Include="Source\Settings\Files.cs" />
+    <Compile Include="Source\Helpers\GameFetcher.cs" />
+    <Compile Include="Source\Collections\ListManager.cs" />
+    <Compile Include="Source\Collections\Lists.cs" />
+    <Compile Include="Source\Models\ChatMessage.cs" />
+    <Compile Include="Source\Models\CsMatch.cs" />
+    <Compile Include="Source\Models\Command.cs" />
+    <Compile Include="Source\Models\EPPlayerStats.cs" />
+    <Compile Include="Source\Models\EPStats.cs" />
+    <Compile Include="Source\Models\Item.cs" />
+    <Compile Include="Source\Models\LiigaGame.cs" />
+    <Compile Include="Source\Models\NHLRoster.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
-    <Compile Include="Classes\Models\Schedule.cs" />
-    <Compile Include="Classes\Models\Transfer.cs" />
-    <Compile Include="Classes\PasteManager.cs" />
-    <Compile Include="Classes\Printer.cs" />
-    <Compile Include="Classes\StaticCommands.cs" />
-    <Compile Include="Classes\Tabulate.cs" />
-    <Compile Include="Starter.cs" />
+    <Compile Include="Source\Models\Schedule.cs" />
+    <Compile Include="Source\Models\Transfer.cs" />
+    <Compile Include="Source\Helpers\PasteManager.cs" />
+    <Compile Include="Source\Helpers\Printer.cs" />
+    <Compile Include="Source\Commands\StaticCommands.cs" />
+    <Compile Include="Source\Helpers\Tabulate.cs" />
+    <Compile Include="Source\Starter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,10 @@
-﻿using System;
+﻿using bDiscord.Classes;
+using bDiscord.Classes.EventArgs;
+using bDiscord.Classes.Models;
+using Discord;
+using Newtonsoft.Json;
+using RestSharp.Extensions.MonoHttp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -7,12 +13,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using bDiscord.Classes;
-using bDiscord.Classes.EventArgs;
-using bDiscord.Classes.Models;
-using Discord;
-using Newtonsoft.Json;
-using RestSharp.Extensions.MonoHttp;
 using TwitchLib;
 using Channels = bDiscord.Classes.Channels;
 
@@ -51,8 +51,25 @@ namespace bDiscord
                 {
                     if (e.Message.Text.StartsWith(BotSettings.BotPrefix))
                     {
-                        OnCommandReceived(this, new CommandReceivedEventArgs() { CommandName = e.Message.Text });
+                        OnCommandReceived(this, new CommandReceivedEventArgs() { CommandName = e.Message.Text, Username = e.User.Name });
                     }
+                }
+
+                bool matchFound = false;
+                foreach (var message in Lists.MessageList)
+                {
+                    if (message.Username == e.User.Name)
+                    {
+                        message.Message = e.Message.Text;
+                        message.Time = DateTime.Now;
+                        matchFound = true;
+                    }
+                }
+
+                if (matchFound == false)
+                {
+                    Console.WriteLine("new entry added, total entries: " + Lists.MessageList.Count);
+                    Lists.MessageList.Add(new ChatMessage(e.User.Name, DateTime.Now, e.Message.Text));
                 }
                 Printer.Print("[" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
             };
@@ -76,14 +93,14 @@ namespace bDiscord
             }
         }
 
-        protected virtual void OnCommandReceived(string commandName)
+        protected virtual void OnCommandReceived(string commandName, string userName)
         {
-            CommandReceived?.Invoke(this, new CommandReceivedEventArgs() { CommandName = commandName });
+            CommandReceived?.Invoke(this, new CommandReceivedEventArgs() { CommandName = commandName, Username = userName });
         }
 
         private void OnCommandReceived(object source, CommandReceivedEventArgs args)
         {
-            commandManager.CheckCommand(args.CommandName);
+            commandManager.CheckCommand(args.CommandName, args.Username);
         }
 
         private void SetupChannels()

@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
-using bDiscord.Classes.EventArgs;
+﻿using bDiscord.Classes.EventArgs;
 using bDiscord.Classes.Models;
 using Newtonsoft.Json;
+using System;
+using System.IO;
 
 namespace bDiscord.Classes
 {
@@ -58,9 +58,9 @@ namespace bDiscord.Classes
             OnCommandsSaved();
         }
 
-        public async void CheckCommand(string commandName)
+        public async void CheckCommand(string commandName, string commandSender)
         {
-            string commandResponse = await StaticCommands.CheckCommand(commandName);
+            string commandResponse = await StaticCommands.CheckCommand(commandName, commandSender);
             if (commandResponse != string.Empty)
             {
                 try

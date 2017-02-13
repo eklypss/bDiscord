@@ -1,13 +1,13 @@
-﻿using System;
+﻿using bDiscord.Classes.Models;
+using Newtonsoft.Json;
+using RestSharp.Extensions.MonoHttp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using bDiscord.Classes.Models;
-using Newtonsoft.Json;
-using RestSharp.Extensions.MonoHttp;
 
 namespace bDiscord.Classes
 {
@@ -16,7 +16,7 @@ namespace bDiscord.Classes
         private static string latestFile = string.Empty;
         private static Tabulate tabulator = new Tabulate();
 
-        public static async Task<string> CheckCommand(string commandText)
+        public static async Task<string> CheckCommand(string commandText, string commandSender)
         {
             string[] parameters = commandText.Split(' ');
             if (commandText.StartsWith("!followage ") && parameters.Length >= 2)
@@ -41,6 +41,18 @@ namespace bDiscord.Classes
                     return string.Empty;
                 }
             }
+            if (commandText == "!ewlist")
+            {
+                List<string> emojiList = new List<string>();
+                foreach (var serverEmoji in Channels.MainChannel.Server.CustomEmojis)
+                {
+                    if (serverEmoji.Name.StartsWith("ew"))
+                    {
+                        emojiList.Add(":" + serverEmoji.Name + ":");
+                    }
+                }
+                return string.Join(" ", emojiList.ToArray());
+            }
             if (commandText == "!kisu")
             {
                 using (WebClient web = new WebClient())
@@ -56,6 +68,22 @@ namespace bDiscord.Classes
                         if (xmlElement != null) return xmlElement.InnerText;
                     }
                 }
+            }
+            if (commandText.StartsWith("!seen") && parameters.Length >= 1)
+            {
+                string userName = parameters[1];
+                bool matchFound = false;
+                if (userName.ToLower() == "bulfbot") return "<:wutTF:230400938790092812>";
+                if (userName.ToLower() == commandSender.ToLower()) return "<:ewS:256408625977884672>";
+                foreach (var message in Lists.MessageList)
+                {
+                    if (message.Username.ToLower() == userName.ToLower())
+                    {
+                        matchFound = true;
+                        return string.Format("**{0}** was last seen on **{1}** saying: **{2}**", message.Username, message.Time.ToString("MM/dd/yyyy HH:mm:ss"), message.Message);
+                    }
+                }
+                if (!matchFound) return string.Format("I haven't seen **{0}** talking here. <:ewPalm:256415457622360064> ", userName);
             }
             if (commandText.StartsWith("!commands"))
             {

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using bDiscord.Classes.Models;
+﻿using bDiscord.Classes.Models;
+using System.Collections.Generic;
 
 namespace bDiscord.Classes
 {
@@ -10,5 +10,6 @@ namespace bDiscord.Classes
         public static List<string> TwitchStreams { get; set; } = new List<string>();
         public static List<Command> CommandsList { get; set; } = new List<Command>();
         public static List<Item> ItemsList { get; set; } = new List<Item>();
+        public static List<ChatMessage> MessageList { get; set; } = new List<ChatMessage>();
     }
 }
