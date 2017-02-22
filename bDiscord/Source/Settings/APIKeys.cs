@@ -1,4 +1,4 @@
-﻿namespace bDiscord.Classes
+﻿namespace bDiscord.Source
 {
     internal static class APIKeys
     {

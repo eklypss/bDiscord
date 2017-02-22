@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     public static class ListManager
     {

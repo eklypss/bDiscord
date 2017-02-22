@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace bDiscord.Classes.Models
+namespace bDiscord.Source.Models
 {
     internal class ChatMessage
     {

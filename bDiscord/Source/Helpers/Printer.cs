@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     internal static class Printer
     {

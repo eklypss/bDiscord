@@ -2,7 +2,7 @@
 
 // ReSharper disable All
 
-namespace bDiscord.Classes.Models
+namespace bDiscord.Source.Models
 {
     public class NHLRoster
     {
