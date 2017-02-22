@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace bDiscord.Classes.Models
+namespace bDiscord.Source.Models
 {
     public class Transfer
     {

@@ -1,4 +1,4 @@
-﻿namespace bDiscord.Classes.EventArgs
+﻿namespace bDiscord.Source.EventArgs
 {
     public class CommandReceivedEventArgs : System.EventArgs
     {

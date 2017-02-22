@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 
 // WIP
-namespace bDiscord.Classes.Interfaces
+namespace bDiscord.Source.Interfaces
 {
     internal interface IStaticCommand
     {

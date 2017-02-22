@@ -1,6 +1,6 @@
-﻿using bDiscord.Classes.Models;
+﻿using bDiscord.Source.Models;
 
-namespace bDiscord.Classes.EventArgs
+namespace bDiscord.Source.EventArgs
 {
     public class CommandEventArgs : System.EventArgs
     {

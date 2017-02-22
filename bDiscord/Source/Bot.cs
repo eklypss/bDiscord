@@ -1,6 +1,6 @@
-﻿using bDiscord.Classes;
-using bDiscord.Classes.EventArgs;
-using bDiscord.Classes.Models;
+﻿using bDiscord.Source;
+using bDiscord.Source.EventArgs;
+using bDiscord.Source.Models;
 using Discord;
 using Newtonsoft.Json;
 using RestSharp.Extensions.MonoHttp;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TwitchLib;
-using Channels = bDiscord.Classes.Channels;
+using Channels = bDiscord.Source.Channels;
 
 namespace bDiscord
 {
@@ -22,8 +22,10 @@ namespace bDiscord
     {
         private Timer twitchTimer;
         private Timer transferTimer;
-        private static CommandManager commandManager;
+        private CommandManager commandManager;
         private Transfer.Datum latestTransfer;
+
+        private Thread mainThread;
 
         public delegate void OnCommandReceivedEventHandler(object source, CommandReceivedEventArgs e);
 
@@ -33,46 +35,24 @@ namespace bDiscord
         {
             CheckFiles();
             LoadData();
+            TwitchApi.SetClientId(APIKeys.TwitchClientID);
 
             Clients.MainClient = new DiscordClient();
             commandManager = new CommandManager();
-            twitchTimer = new Timer(TwitchCheck, null, 60000, 300000);
+
+            mainThread = new Thread(new ThreadStart(ReadMessages));
+            mainThread.Start();
+
             Task.Run(() =>
             {
                 transferTimer = new Timer(TransferCheck, null, 5000, 60000);
             });
+            Task.Run(() =>
+            {
+                twitchTimer = new Timer(TwitchCheck, null, 60000, 300000);
+            });
 
             this.CommandReceived += OnCommandReceived;
-            TwitchApi.SetClientId(APIKeys.TwitchClientID);
-
-            Clients.MainClient.MessageReceived += (sender, e) =>
-            {
-                if (!e.Message.IsAuthor)
-                {
-                    if (e.Message.Text.StartsWith(BotSettings.BotPrefix))
-                    {
-                        OnCommandReceived(this, new CommandReceivedEventArgs() { CommandName = e.Message.Text, Username = e.User.Name });
-                    }
-                }
-
-                bool matchFound = false;
-                foreach (var message in Lists.MessageList)
-                {
-                    if (message.Username == e.User.Name)
-                    {
-                        message.Message = e.Message.Text;
-                        message.Time = DateTime.Now;
-                        matchFound = true;
-                    }
-                }
-
-                if (matchFound == false)
-                {
-                    Console.WriteLine("new entry added, total entries: " + Lists.MessageList.Count);
-                    Lists.MessageList.Add(new ChatMessage(e.User.Name, DateTime.Now, e.Message.Text));
-                }
-                Printer.Print("[" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
-            };
 
             try
             {
@@ -103,6 +83,38 @@ namespace bDiscord
             commandManager.CheckCommand(args.CommandName, args.Username);
         }
 
+        private void ReadMessages()
+        {
+            Clients.MainClient.MessageReceived += (sender, e) =>
+            {
+                if (!e.Message.IsAuthor)
+                {
+                    if (e.Message.Text.StartsWith(BotSettings.BotPrefix))
+                    {
+                        OnCommandReceived(this, new CommandReceivedEventArgs() { CommandName = e.Message.Text, Username = e.User.Name });
+                    }
+                }
+
+                bool matchFound = false;
+                foreach (var message in Lists.MessageList)
+                {
+                    if (message.Username == e.User.Name)
+                    {
+                        message.Message = e.Message.Text;
+                        message.Time = DateTime.Now;
+                        matchFound = true;
+                    }
+                }
+
+                if (matchFound == false)
+                {
+                    Console.WriteLine("new entry added, total entries: " + Lists.MessageList.Count);
+                    Lists.MessageList.Add(new ChatMessage(e.User.Name, DateTime.Now, e.Message.Text));
+                }
+                Printer.Print("[" + e.Server.Name + "] [" + e.Channel.Name + "] " + e.Message.User.Name + ": " + e.Message.Text);
+            };
+        }
+
         private void SetupChannels()
         {
             try
@@ -119,6 +131,7 @@ namespace bDiscord
 
         private void TwitchCheck(object state)
         {
+            Printer.PrintTag("TwitchCheck", "Checking for online streams.");
             var previousStreams = new List<string>(Lists.OnlineStreams);
             Lists.OnlineStreams.Clear();
             try
@@ -157,21 +170,28 @@ namespace bDiscord
         {
             while (true)
             {
-                using (WebClient web = new WebClient())
+                try
                 {
-                    web.Encoding = Encoding.UTF8;
-                    string pageSource = await web.DownloadStringTaskAsync("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
-                    var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(HttpUtility.HtmlDecode(pageSource));
-                    foreach (var transfer in transfers.data)
+                    using (WebClient web = new WebClient())
                     {
-                        if (latestTransfer == null || transfer.id != latestTransfer.id)
+                        web.Encoding = Encoding.UTF8;
+                        string pageSource = await web.DownloadStringTaskAsync("http://api.eliteprospects.com/beta/transfers?filter=toTeam.latestTeamStats.league.parentLeague.id=7%26player.country.name=Finland&transferProbability=CONFIRMED&sort=id:desc&limit=1");
+                        var transfers = JsonConvert.DeserializeObject<Transfer.RootObject>(HttpUtility.HtmlDecode(pageSource));
+                        foreach (var transfer in transfers.data)
                         {
-                            string finalString = string.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name, transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
-                            await Channels.MainChannel.SendMessage(finalString);
-                            latestTransfer = transfer;
-                            break;
+                            if (latestTransfer == null || transfer.id != latestTransfer.id)
+                            {
+                                string finalString = string.Format("[{0}] [{1}] **{2} {3}** from **{4}** ({5}) to **{6}** ({7})", transfer.transferType, transfer.updated, transfer.player.firstName, transfer.player.lastName, transfer.fromTeam.name, transfer.fromTeam.latestTeamStats.league.parentLeague.name, transfer.toTeam.name, transfer.toTeam.latestTeamStats.league.parentLeague.name);
+                                await Channels.MainChannel.SendMessage(finalString);
+                                latestTransfer = transfer;
+                                break;
+                            }
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Printer.PrintTag("Exception", ex.Message);
                 }
             }
         }
@@ -202,6 +222,18 @@ namespace bDiscord
                 Printer.Print("Loaded " + Lists.ItemsList.Count + " items from file.");
             }
             else Printer.Print("No items to load.");
+            if (File.ReadAllText(Files.DrinksFile).Length > 0)
+            {
+                Lists.DrinksList = JsonConvert.DeserializeObject<List<Drink>>(File.ReadAllText(Files.DrinksFile));
+                Printer.Print("Loaded " + Lists.DrinksList.Count + " drinks from file.");
+            }
+            else Printer.Print("No drinks to load.");
+            if (File.ReadAllText(Files.FoodsFile).Length > 0)
+            {
+                Lists.FoodsList = JsonConvert.DeserializeObject<List<Food>>(File.ReadAllText(Files.FoodsFile));
+                Printer.Print("Loaded " + Lists.FoodsList.Count + " foods from file.");
+            }
+            else Printer.Print("No foods to load.");
         }
 
         private void CheckFiles()

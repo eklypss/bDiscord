@@ -1,4 +1,4 @@
-﻿using bDiscord.Classes.Models;
+﻿using bDiscord.Source.Models;
 using Newtonsoft.Json;
 using RestSharp.Extensions.MonoHttp;
 using System;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     public static class StaticCommands
     {
@@ -654,6 +654,47 @@ namespace bDiscord.Classes
                     randomList.Add(string.Format("{0} **({1}.{2}€)**", Lists.ItemsList[randomItem].name, Lists.ItemsList[randomItem].euro_whole, Lists.ItemsList[randomItem].euro_cents));
                 }
                 return string.Join(", ", randomList);
+            }
+            if (commandText == "!tilaus")
+            {
+                Random random = new Random();
+                List<string> randomList = new List<string>();
+                int amount = random.Next(2, 4);
+                int calories = 0;
+                int foodsAmount = Lists.FoodsList.Count;
+                for (int i = 0; i < amount; i++)
+                {
+                    int randomItem = random.Next(foodsAmount);
+                    calories += Lists.FoodsList[randomItem].calories;
+                    randomList.Add(Lists.FoodsList[randomItem].title);
+                }
+                string allItems = string.Join(", ", randomList);
+
+                return string.Format("{0}, total calories: {1} <:ewFat:261587897830866954>", allItems, calories);
+            }
+            if (commandText == "!juoma")
+            {
+                Random random = new Random();
+                int itemsAmount = Lists.DrinksList.Count;
+                int randomNumber = random.Next(0, itemsAmount);
+                return string.Format("{0} ({1}) **({2}€)** https://www.alko.fi/tuotteet/{3}/", Lists.DrinksList[randomNumber].Nimi, Lists.DrinksList[randomNumber].Tyyppi, Lists.DrinksList[randomNumber].Hinta, Lists.DrinksList[randomNumber].Numero);
+            }
+            if (commandText.StartsWith("!juoma2") && parameters.Length >= 1)
+            {
+                string categoryName = commandText.Substring(commandText.LastIndexOf("!juoma2") + "!juoma2".Length + 1);
+                Console.WriteLine(categoryName);
+                Random random = new Random();
+                var itemsWithCategory = Lists.DrinksList.FindAll(x => x.Tyyppi.ToLower() == categoryName.ToLower());
+                if (itemsWithCategory.Count == 0) return "Category not found!";
+                int randomNumber = random.Next(0, itemsWithCategory.Count);
+                return string.Format("{0} ({1}) **({2}€)** https://www.alko.fi/tuotteet/{3}/", itemsWithCategory[randomNumber].Nimi, itemsWithCategory[randomNumber].Tyyppi, itemsWithCategory[randomNumber].Hinta, itemsWithCategory[randomNumber].Numero);
+            }
+            if (commandText.StartsWith("!juoma3") && parameters.Length >= 1)
+            {
+                string itemName = commandText.Substring(commandText.LastIndexOf("!juoma3") + "!juoma3".Length + 1);
+                var itemMatch = Lists.DrinksList.Find(x => x.Nimi.ToLower() == itemName.ToLower());
+                if (itemMatch == null) return "Category not found!";
+                return string.Format("**{0}**: {1}", itemMatch.Nimi, itemMatch.Luonnehdinta);
             }
             if (commandText.StartsWith("!rappio") && parameters.Length >= 1)
             {

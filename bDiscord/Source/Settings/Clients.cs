@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     public static class Clients
     {

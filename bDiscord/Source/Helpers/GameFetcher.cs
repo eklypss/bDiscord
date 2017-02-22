@@ -1,5 +1,5 @@
 ﻿using AngleSharp.Parser.Html;
-using bDiscord.Classes.Models;
+using bDiscord.Source.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     public class GameFetcher
     {

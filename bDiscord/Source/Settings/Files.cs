@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     internal static class Files
     {
@@ -11,5 +11,7 @@ namespace bDiscord.Classes
         public static readonly string KeyFile = Path.Combine(BotFolder, "keys.config");
         public static readonly string StreamFile = Path.Combine(BotFolder, "streams.json");
         public static readonly string ItemsFile = Path.Combine(BotFolder, "items.json");
+        public static readonly string DrinksFile = Path.Combine(BotFolder, "drinks.json");
+        public static readonly string FoodsFile = Path.Combine(BotFolder, "foods.json");
     }
 }

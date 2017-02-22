@@ -118,7 +118,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Source\Models\Drink.cs" />
     <Compile Include="Source\Interfaces\IStaticCommand.cs" />
+    <Compile Include="Source\Models\Food.cs" />
     <Compile Include="Source\Settings\APIKeys.cs" />
     <Compile Include="Source\Bot.cs" />
     <Compile Include="Source\Settings\BotSettings.cs" />

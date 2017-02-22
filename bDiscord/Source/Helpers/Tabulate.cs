@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace bDiscord.Classes
+namespace bDiscord.Source
 {
     internal class Tabulate
     {
