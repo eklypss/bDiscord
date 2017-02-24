@@ -24,16 +24,18 @@ namespace bDiscord.Source
             {
                 try
                 {
-                    WebClient webClient = new WebClient();
-                    string link = string.Format("https://api.rtainc.co/twitch/channels/{1}/followers/{0}?format=[2]", parameters[1], parameters[2]);
-                    var response = await webClient.DownloadStringTaskAsync(link);
-                    if (response.Contains("isn't following"))
+                    using (WebClient webClient = new WebClient())
                     {
-                        return parameters[1] + " is not following " + parameters[2] + ".";
-                    }
-                    else
-                    {
-                        return parameters[1] + " has been following " + parameters[2] + " for " + response + "!";
+                        string link = string.Format("https://api.rtainc.co/twitch/channels/{1}/followers/{0}?format=[2]", parameters[1], parameters[2]);
+                        var response = await webClient.DownloadStringTaskAsync(link);
+                        if (response.Contains("isn't following"))
+                        {
+                            return string.Format("{0} is not following {1}.", parameters[1], parameters[2]);
+                        }
+                        else
+                        {
+                            return string.Format("{0} has been following {1} for {3}!", parameters[1], parameters[2], response);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -100,42 +102,42 @@ namespace bDiscord.Source
                         case "remove":
                         case "del":
                         case "delete":
+                        {
+                            bool match = false;
+                            foreach (var command in Lists.CommandsList)
                             {
-                                bool match = false;
-                                foreach (var command in Lists.CommandsList)
+                                if (command.Name == parameters[2])
                                 {
-                                    if (command.Name == parameters[2])
-                                    {
-                                        cm.RemoveCommand(command);
-                                        match = true;
-                                        break;
-                                    }
+                                    cm.RemoveCommand(command);
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    return "Command not found: **" + parameters[2] + "**";
-                                }
-                                break;
                             }
+                            if (!match)
+                            {
+                                return string.Format("Command not found: **{0}**", parameters[2]);
+                            }
+                            break;
+                        }
                         case "add":
+                        {
+                            bool match = false;
+                            foreach (var commandName in Lists.CommandsList)
                             {
-                                bool match = false;
-                                foreach (var commandName in Lists.CommandsList)
+                                if (commandName.Name == parameters[2])
                                 {
-                                    if (commandName.Name == parameters[2])
-                                    {
-                                        match = true;
-                                        break;
-                                    }
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    string commandAction = commandText.Substring(commandText.LastIndexOf(parameters[2]) + parameters[2].Length + 1);
-                                    cm.AddCommand(parameters[2], commandAction);
-                                    return "Added command: " + parameters[2] + ", action: " + commandAction;
-                                }
-                                break;
                             }
+                            if (!match)
+                            {
+                                string commandAction = commandText.Substring(commandText.LastIndexOf(parameters[2]) + parameters[2].Length + 1);
+                                cm.AddCommand(parameters[2], commandAction);
+                                return string.Format("Added command: {0}, action: {1}", parameters[2], commandAction);
+                            }
+                            break;
+                        }
                         case "list":
                             {
                                 return await PasteManager.CreatePaste("Commands " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.CommandFile));
@@ -158,53 +160,53 @@ namespace bDiscord.Source
                     switch (parameters[1])
                     {
                         case "add":
+                        {
+                            bool match = false;
+                            foreach (var stream in Lists.TwitchStreams)
                             {
-                                bool match = false;
-                                foreach (var stream in Lists.TwitchStreams)
+                                if (stream == parameters[2])
                                 {
-                                    if (stream == parameters[2])
-                                    {
-                                        match = true;
-                                        break;
-                                    }
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    ListManager.AddStream(parameters[2]);
-                                    return "Added stream: **" + parameters[2] + "**";
-                                }
-                                else return "Stream **" + parameters[2] + "** is already in the list.";
                             }
+                            if (!match)
+                            {
+                                ListManager.AddStream(parameters[2]);
+                                return string.Format("Added stream: **{0}**", parameters[2]);
+                            }
+                            else return string.Format("Stream **{0}** is already in the list.", parameters[2]);
+                        }
                         case "delete":
+                        {
+                            bool match = false;
+                            foreach (var stream in Lists.TwitchStreams)
                             {
-                                bool match = false;
-                                foreach (var stream in Lists.TwitchStreams)
+                                if (stream == parameters[2])
                                 {
-                                    if (stream == parameters[2])
-                                    {
-                                        ListManager.RemoveStream(parameters[2]);
-                                        match = true;
-                                        break;
-                                    }
+                                    ListManager.RemoveStream(parameters[2]);
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    return "Stream not found: **" + parameters[2] + "**";
-                                }
-                                else return "Stream removed: **" + parameters[2] + "**";
                             }
+                            if (!match)
+                            {
+                                    return string.Format("Stream not found: **{0}**", parameters[2]);
+                            }
+                            else return string.Format("Stream removed: **{0}**", parameters[2]);
+                        }
                         case "list":
-                            {
-                                return await PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
-                            }
+                        {
+                            return await PasteManager.CreatePaste("Streams " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.StreamFile));
+                        }
                         case "online":
-                            {
-                                return "**Streams online:** " + string.Join(", ", Lists.OnlineStreams);
-                            }
+                        {
+                            return string.Format("Streams online: {0}", string.Join(", ", Lists.OnlineStreams));
+                        }
                         default:
-                            {
-                                return "Available commands: !streams add|delete|list|online";
-                            }
+                        {
+                            return "Available commands: !streams add|delete|list|online";
+                        }
                     }
                 }
             }
@@ -215,25 +217,27 @@ namespace bDiscord.Source
                     switch (parameters[1])
                     {
                         case "add":
+                        {
+                            bool match = false;
+                            string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings add") + "!toppings add".Length + 1);
+                            foreach (var topping in Lists.ToppingsList)
                             {
-                                bool match = false;
-                                string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings add") + "!toppings add".Length + 1);
-                                foreach (var topping in Lists.ToppingsList)
+                                if (topping == toppingName)
                                 {
-                                    if (topping == toppingName)
-                                    {
-                                        match = true;
-                                        break;
-                                    }
+                                    match = true;
+                                    break;
                                 }
-                                if (!match)
-                                {
-                                    ListManager.AddTopping(toppingName);
-                                    return "Added topping: " + toppingName;
-                                }
-                                else return "Topping **" + toppingName + "** already exists.";
                             }
-                        case "delete":
+                            if (!match)
+                            {
+                                ListManager.AddTopping(toppingName);
+                                return string.Format("Added topping: **{0}**", toppingName);
+                            }
+                            else return string.Format("Topping **{0}** already exists.", toppingName);
+                            }
+                            case "delete":
+                            case "del":
+                            case "remove":
                             {
                                 bool match = false;
                                 string toppingName = commandText.Substring(commandText.LastIndexOf("!toppings delete") + "!toppings delete".Length + 1);
@@ -255,7 +259,7 @@ namespace bDiscord.Source
                                         {
                                             ListManager.RemoveTopping(topping);
                                         }
-                                        return "Removed **" + toppingsToRemove.Count + "** toppings that contained: **'" + tempName + "'**";
+                                        return string.Format("Removed **{0}** toppings that contained: **{1}**.", toppingsToRemove.Count, tempName);
                                     }
                                 }
                                 else
@@ -271,7 +275,7 @@ namespace bDiscord.Source
                                     }
                                 }
                                 if (!match) return "Toppping does not exist!";
-                                else return "Topping " + toppingName + " removed.";
+                                else return string.Format("Topping: **{0}** removed.", toppingName);
                             }
                         case "find":
                             {
@@ -286,18 +290,18 @@ namespace bDiscord.Source
                                 }
                                 if (matches.Count > 0)
                                 {
-                                    return "Matches: " + string.Join(", ", matches);
+                                    return string.Format("Matches: {0}", string.Join(", ", matches));
                                 }
                                 return "No matches!";
                             }
                         case "list":
-                            {
-                                return await PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
-                            }
+                        {
+                            return await PasteManager.CreatePaste("Toppings " + DateTime.Now.ToString() + string.Empty, File.ReadAllText(Files.ToppingFile));
+                        }
                         default:
-                            {
-                                return "Available commands: !toppings add|delete|find|list";
-                            }
+                        {
+                            return "Available commands: !toppings add|delete|find|list";
+                        }
                     }
                 }
                 else return "Available commands: !toppings add|delete|find|list";
@@ -311,64 +315,64 @@ namespace bDiscord.Source
                         switch (parameters[1])
                         {
                             case "cs":
+                            {
+                                using (WebClient web = new WebClient())
                                 {
-                                    using (WebClient web = new WebClient())
-                                    {
-                                        string url = "http://counter-strike.net/jsfeed/gosumatches?count=10";
-                                        string html = await web.DownloadStringTaskAsync(url);
-                                        List<CsMatch> matches = JsonConvert.DeserializeObject<List<CsMatch>>(html);
-                                        string[][] table = new string[matches.Count][];
+                                    string url = "http://counter-strike.net/jsfeed/gosumatches?count=10";
+                                    string html = await web.DownloadStringTaskAsync(url);
+                                    List<CsMatch> matches = JsonConvert.DeserializeObject<List<CsMatch>>(html);
+                                    string[][] table = new string[matches.Count][];
 
-                                        for (int i = 0; i < matches.Count; i++)
-                                        {
-                                            string[] row = new string[3];
-                                            row[0] = matches[i].teams[0].name;
-                                            row[1] = matches[i].teams[1].name;
-                                            Regex re = new Regex("(?<=\\d) +(?=\\d)");
-                                            row[2] = re.Replace(matches[i].time, "");
-                                            table[i] = row;
-                                        }
-                                        await Channels.MainChannel.SendMessage(tabulator.Convert(table));
+                                    for (int i = 0; i < matches.Count; i++)
+                                    {
+                                        string[] row = new string[3];
+                                        row[0] = matches[i].teams[0].name;
+                                        row[1] = matches[i].teams[1].name;
+                                        Regex re = new Regex("(?<=\\d) +(?=\\d)");
+                                        row[2] = re.Replace(matches[i].time, "");
+                                        table[i] = row;
                                     }
-                                    break;
+                                    await Channels.MainChannel.SendMessage(tabulator.Convert(table));
                                 }
+                                break;
+                            }
                             case "nhl":
+                            {
+                                using (WebClient web = new WebClient())
                                 {
-                                    using (WebClient web = new WebClient())
+                                    string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, APIKeys.SportsRadar);
+                                    string pageSource = await web.DownloadStringTaskAsync(sourceURL);
+                                    var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
+                                    await Channels.MainChannel.SendMessage(string.Format("**Games scheduled for {0}/{1}/{2}**", DateTime.Now.Day, DateTime.Now.Month, DateTime.Now.Year));
+                                    foreach (var game in schedule.games)
                                     {
-                                        string sourceURL = string.Format("https://api.sportradar.us/nhl-ot4/games/{0}/{1}/{2}/schedule.json?api_key={3}", DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, APIKeys.SportsRadar);
-                                        string pageSource = await web.DownloadStringTaskAsync(sourceURL);
-                                        var schedule = JsonConvert.DeserializeObject<Schedule.RootObject>(pageSource);
-                                        await Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
-                                        foreach (var game in schedule.games)
-                                        {
-                                            var stringIndex = game.scheduled.IndexOf("T") + 1;
-                                            var gameTime = game.scheduled.Substring(stringIndex, game.scheduled.IndexOf("+") - stringIndex);
-                                            string[] time = gameTime.Split(':');
-                                            int hour = int.Parse(time[0]) + 2;
-                                            if (hour > 24) hour = hour - 24;
-                                            string hourFinal = hour + string.Empty;
-                                            if (hour < 10) hourFinal = "0" + hour;
-                                            await Channels.MainChannel.SendMessage("[" + hourFinal + ":" + time[1] + "] " + game.home.name + " - " + game.away.name);
-                                        }
+                                        var stringIndex = game.scheduled.IndexOf("T") + 1;
+                                        var gameTime = game.scheduled.Substring(stringIndex, game.scheduled.IndexOf("+") - stringIndex);
+                                        string[] time = gameTime.Split(':');
+                                        int hour = int.Parse(time[0]) + 2;
+                                        if (hour > 24) hour = hour - 24;
+                                        string hourFinal = hour + string.Empty;
+                                        if (hour < 10) hourFinal = "0" + hour;
+                                        await Channels.MainChannel.SendMessage(string.Format("[{0}:{1}] {2} - {3}", hourFinal, time[1], game.home.name, game.away.name));
                                     }
-                                    break;
                                 }
+                                break;
+                            }
                             case "liiga":
+                            {
+                                var liigaGames = await GameFetcher.GetLiigaGames();
+                                await Channels.MainChannel.SendMessage(string.Format("**Games scheduled for {0}/{1}/{2}**", DateTime.Now.Day, DateTime.Now.Month, DateTime.Now.Year));
+                                foreach (var game in liigaGames)
                                 {
-                                    var liigaGames = await GameFetcher.GetLiigaGames();
-                                    await Channels.MainChannel.SendMessage("**Games scheduled for " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "**");
-                                    foreach (var game in liigaGames)
-                                    {
-                                        await Channels.MainChannel.SendMessage("[" + game.StartTime + "] " + game.HomeTeamName + " - " + game.AwayTeamName);
-                                    }
-                                    break;
+                                    await Channels.MainChannel.SendMessage(string.Format("[{0}] {1} - {2}", game.StartTime, game.HomeTeamName, game.AwayTeamName));
                                 }
+                                break;
+                            }
                             default:
-                                {
-                                    await Channels.MainChannel.SendMessage("Available parameters: nhl, cs, liiga");
-                                    break;
-                                }
+                            {
+                                await Channels.MainChannel.SendMessage("Available parameters: nhl, cs, liiga");
+                                break;
+                            }
                         }
                     }
                 }
@@ -439,14 +443,18 @@ namespace bDiscord.Source
                         }
                         string pageSource = await web.DownloadStringTaskAsync(teamURL);
                         var roster = JsonConvert.DeserializeObject<EPPlayerStats.RootObject>(pageSource);
+                        var stats = roster.players.data[0];
                         if (roster.players.data[0].playerPosition == "GOALIE")
                         {
-                            return "**Name:** " + roster.players.data[0].firstName + " " + roster.players.data[0].lastName + " **Country: **" + roster.players.data[0].country.name + " **Date of Birth:** " + roster.players.data[0].dateOfBirth + " **Position**: " + roster.players.data[0].playerPosition + " **Catches:** " + roster.players.data[0].catches + " **Height:** " + roster.players.data[0].height + " cm " + "**Weight:** " + roster.players.data[0].weight + " kg **Latest season:** " + roster.players.data[0].latestPlayerStats.season.name + " **Team:** " + roster.players.data[0].latestPlayerStats.team.name + " (" + roster.players.data[0].latestPlayerStats.league.name + ") **Games played:** " + roster.players.data[0].latestPlayerStats.GP + " **GAA:** " + roster.players.data[0].latestPlayerStats.GAA + " **SVS%:** " + roster.players.data[0].latestPlayerStats.SVP;
+                            return string.Format("**Name:** {0} {1} **Country:** {2} **DoB:** {3} **Position:** {4} **Catches:** {5} **Height:** {6} cm **Weight:** {7} kg **Latest season:** {8} **Team:** {9} " +
+                                "({10}) **GP:** {11} **GAA:** {12} **SVS%:** {13}", stats.firstName, stats.lastName, stats.country.name, stats.dateOfBirth, stats.playerPosition, stats.catches, stats.height,
+                                stats.weight, stats.latestPlayerStats.season.name, stats.latestPlayerStats.team.name, stats.latestPlayerStats.league.name, stats.latestPlayerStats.GP, stats.latestPlayerStats.GAA, stats.latestPlayerStats.SVP);
                         }
-                        else
-                        {
-                            return "**Name:** " + roster.players.data[0].firstName + " " + roster.players.data[0].lastName + " **Country: **" + roster.players.data[0].country.name + " **Date of Birth:** " + roster.players.data[0].dateOfBirth + " **Position**: " + roster.players.data[0].playerPosition + " **Shoots:** " + roster.players.data[0].shoots + " **Height:** " + roster.players.data[0].height + " cm " + "**Weight:** " + roster.players.data[0].weight + " kg **Latest season:** " + roster.players.data[0].latestPlayerStats.season.name + " **Team:** " + roster.players.data[0].latestPlayerStats.team.name + " (" + roster.players.data[0].latestPlayerStats.league.name + ") **Games played:** " + roster.players.data[0].latestPlayerStats.GP + " **Goals:** " + roster.players.data[0].latestPlayerStats.G + " **Assists:** " + roster.players.data[0].latestPlayerStats.A + " **Points**: " + roster.players.data[0].latestPlayerStats.TP + " **PPG:** " + roster.players.data[0].latestPlayerStats.PPG + " **+/-:** " + roster.players.data[0].latestPlayerStats.PM + " **PIM:** " + roster.players.data[0].latestPlayerStats.PIM;
-                        }
+
+                        return string.Format("**Name:** {0} {1} **Country:** {2} **DoB:** {3} **Position:** {4} **Catches:** {5} **Height:** {6} cm **Weight:** {7} kg **Latest season:** {8} **Team:** {9} " +
+                               "({10}) **GP:** {11} **G:** {12} **A:** {13} **TP:** {14} **PPG:** {15} **+/-:** {16} **PIM:** {17}", stats.firstName, stats.lastName, stats.country.name, stats.dateOfBirth, stats.playerPosition, stats.catches, stats.height,
+                               stats.weight, stats.latestPlayerStats.season.name, stats.latestPlayerStats.team.name, stats.latestPlayerStats.league.name, stats.latestPlayerStats.GP,
+                               stats.latestPlayerStats.G, stats.latestPlayerStats.A, stats.latestPlayerStats.TP, stats.latestPlayerStats.PPG, stats.latestPlayerStats.PM, stats.latestPlayerStats.PIM);
                     }
                 }
                 catch (Exception ex)
@@ -556,7 +564,9 @@ namespace bDiscord.Source
                                     for (int i = 0; i < 5; i++)
                                     {
                                         int number = i + 1;
-                                        await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **SVS%:** " + stats.data[i].SVP + " **GAA:** " + stats.data[i].GAA);
+                                        var s = stats.data[i];
+                                        await Channels.MainChannel.SendMessage(string.Format("**{0}.** {1} {2} ({3}) **GP:** {4} **SVS%:** {5} **GAA:** {6}",
+                                            number, s.player.firstName, s.player.lastName, s.team.name, s.GP, s.SVP, s.GAA));
                                     }
                                 }
                                 else
@@ -564,7 +574,9 @@ namespace bDiscord.Source
                                     for (int i = 0; i < 5; i++)
                                     {
                                         int number = i + 1;
-                                        await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **G:** " + stats.data[i].G + " **A:** " + stats.data[i].A + " **TP:** " + stats.data[i].TP + " **PPG:** " + stats.data[i].PPG + " **PIM:** " + stats.data[i].PIM);
+                                        var s = stats.data[i];
+                                        await Channels.MainChannel.SendMessage(string.Format("**{0}.** {1} {2} ({3}) **GP:** {4} **G:** {5} **A:** {6} **TP:** {7} **PPG:**: {8} **+/-:** {9} **PIM:** {10}",
+                                            number, s.player.firstName, s.player.lastName, s.team.name, s.GP, s.G, s.A, s.TP, s.PPG, s.PM, s.PIM));
                                     }
                                 }
                                 return string.Empty;
@@ -612,7 +624,9 @@ namespace bDiscord.Source
                                 for (int i = 0; i < 5; i++)
                                 {
                                     int number = i + 1;
-                                    await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **SVS%:** " + stats.data[i].SVP + " **GAA:** " + stats.data[i].GAA);
+                                    var s = stats.data[i];
+                                    await Channels.MainChannel.SendMessage(string.Format("**{0}.** {1} {2} ({3}) **GP:** {4} **SVS%:** {5} **GAA:** {6}",
+                                        number, s.player.firstName, s.player.lastName, s.team.name, s.GP, s.SVP, s.GAA));
                                 }
                             }
                             else
@@ -620,7 +634,9 @@ namespace bDiscord.Source
                                 for (int i = 0; i < 5; i++)
                                 {
                                     int number = i + 1;
-                                    await Channels.MainChannel.SendMessage("**" + number + ".** " + stats.data[i].player.firstName + " " + stats.data[i].player.lastName + " (" + stats.data[i].team.name + ") **GP:** " + stats.data[i].GP + " **G:** " + stats.data[i].G + " **A:** " + stats.data[i].A + " **TP:** " + stats.data[i].TP + " **PPG:** " + stats.data[i].PPG + " **PIM:** " + stats.data[i].PIM);
+                                    var s = stats.data[i];
+                                    await Channels.MainChannel.SendMessage(string.Format("**{0}.** {1} {2} ({3}) **GP:** {4} **G:** {5} **A:** {6} **TP:** {7} **PPG:**: {8} **+/-:** {9} **PIM:** {10}",
+                                        number, s.player.firstName, s.player.lastName, s.team.name, s.GP, s.G, s.A, s.TP, s.PPG, s.PM, s.PIM));
                                 }
                             }
                             return string.Empty;
@@ -714,17 +730,17 @@ namespace bDiscord.Source
                 string name = commandText.Substring(commandText.LastIndexOf("!rappio") + "!rappio".Length + 1);
                 if (name.Contains("tj") || name.Contains("tuolijakkara"))
                 {
-                    return "**Name:** " + name + " **Rappio %:** 100%";
+                    return string.Format("**Name:** {0} **Rappio %:** 100%", name);
                 }
                 else
                 {
                     Random rappio = new Random();
-                    return "**Name:** " + name + " **Rappio %:** " + rappio.Next(0, 100) + "%";
+                    return string.Format("**Name:** {0} **Rappio %:** {1}%", name, rappio.Next(0, 100));
                 }
             }
             else
             {
-                Printer.PrintTag("StaticCommand", "Static command not found: " + commandText);
+                Printer.PrintTag("StaticCommand", string.Format("Static command not found: {0}", commandText));
                 return string.Empty;
             }
         }
