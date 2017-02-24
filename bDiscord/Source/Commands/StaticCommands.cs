@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -323,7 +324,8 @@ namespace bDiscord.Source
                                             string[] row = new string[3];
                                             row[0] = matches[i].teams[0].name;
                                             row[1] = matches[i].teams[1].name;
-                                            row[2] = matches[i].time;
+                                            Regex re = new Regex("(?<=\\d) +(?=\\d)");
+                                            row[2] = re.Replace(matches[i].time, "");
                                             table[i] = row;
                                         }
                                         await Channels.MainChannel.SendMessage(tabulator.Convert(table));
@@ -659,25 +661,35 @@ namespace bDiscord.Source
             {
                 Random random = new Random();
                 List<string> randomList = new List<string>();
+                var foods = Lists.FoodsList;
                 int amount = random.Next(2, 4);
+                if (commandSender == "EvilWalrus")
+                {
+                    foods = foods.FindAll(food => food.calories >= 400);
+                    amount = 4;
+                }
                 int calories = 0;
-                int foodsAmount = Lists.FoodsList.Count;
                 for (int i = 0; i < amount; i++)
                 {
-                    int randomItem = random.Next(foodsAmount);
-                    calories += Lists.FoodsList[randomItem].calories;
-                    randomList.Add(Lists.FoodsList[randomItem].title);
+                    var food = foods[random.Next(foods.Count)];
+                    calories += food.calories;
+                    randomList.Add(food.title);
                 }
-                string allItems = string.Join(", ", randomList);
+                string allItems = string.Join("; ", randomList);
 
                 return string.Format("{0}, total calories: {1} <:ewFat:261587897830866954>", allItems, calories);
             }
             if (commandText == "!juoma")
             {
                 Random random = new Random();
-                int itemsAmount = Lists.DrinksList.Count;
-                int randomNumber = random.Next(0, itemsAmount);
-                return string.Format("{0} ({1}) **({2}€)** https://www.alko.fi/tuotteet/{3}/", Lists.DrinksList[randomNumber].Nimi, Lists.DrinksList[randomNumber].Tyyppi, Lists.DrinksList[randomNumber].Hinta, Lists.DrinksList[randomNumber].Numero);
+                var drinks = Lists.DrinksList;
+                if (commandSender == "tuolijakkara")
+                {
+                    var tjTypes = new List<string> { "viinat", "vodkat", "maustetut viinat", "maustetut vodkat" };
+                    drinks = drinks.FindAll(dr => tjTypes.Contains(dr.Tyyppi));
+                }
+                var drink = drinks[random.Next(drinks.Count)];
+                return string.Format("{0} ({1}) **({2}€)** https://www.alko.fi/tuotteet/{3:D6}/", drink.Nimi, drink.Tyyppi, drink.Hinta, drink.Numero);
             }
             if (commandText.StartsWith("!juoma2") && parameters.Length >= 1)
             {
@@ -686,8 +698,9 @@ namespace bDiscord.Source
                 Random random = new Random();
                 var itemsWithCategory = Lists.DrinksList.FindAll(x => x.Tyyppi.ToLower() == categoryName.ToLower());
                 if (itemsWithCategory.Count == 0) return "Category not found!";
-                int randomNumber = random.Next(0, itemsWithCategory.Count);
-                return string.Format("{0} ({1}) **({2}€)** https://www.alko.fi/tuotteet/{3}/", itemsWithCategory[randomNumber].Nimi, itemsWithCategory[randomNumber].Tyyppi, itemsWithCategory[randomNumber].Hinta, itemsWithCategory[randomNumber].Numero);
+                int randomNumber = random.Next(itemsWithCategory.Count);
+                var item = itemsWithCategory[randomNumber];
+                return string.Format("{0} ({1}) **({2}€)** https://www.alko.fi/tuotteet/{3:D6}/", item.Nimi, item.Tyyppi, item.Hinta, item.Numero);
             }
             if (commandText.StartsWith("!juoma3") && parameters.Length >= 1)
             {
