@@ -693,7 +693,14 @@ namespace bDiscord.Source
                 }
                 string allItems = string.Join("; ", randomList);
 
-                return string.Format("{0}, total calories: {1} <:ewFat:261587897830866954>", allItems, calories);
+                if(calories <= 2000)
+                {
+                    return string.Format("{0}, total calories: {1} :baby:", allItems, calories);
+                }
+                else
+                {
+                    return string.Format("{0}, total calories: {1} <:ewFat:261587897830866954>", allItems, calories);
+                }
             }
             if (commandText == "!juoma")
             {
